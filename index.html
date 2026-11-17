@@ -1,0 +1,2762 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thipaw Delivery Super-App</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pyidaungsu:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', 'Pyidaungsu', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.25s ease-out forwards; }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-900 antialiased min-h-screen flex justify-center items-center">
+
+    <div class="w-full max-w-[480px] bg-[#F8FAFC] min-h-screen sm:min-h-[850px] sm:rounded-[36px] sm:shadow-2xl overflow-hidden flex flex-col relative border border-slate-200">
+
+        <!-- 1. TERMS & RULES WELCOME SCREEN -->
+        <div id="terms-screen" class="absolute inset-0 bg-[#F8FAFC] z-50 flex flex-col p-6 overflow-y-auto hidden">
+            <div class="my-auto space-y-5 py-6">
+                <div class="text-center space-y-2">
+                    <img src="https://i.ibb.co/B5NfCWH9/1794811370987.jpg" alt="TD Logo" class="w-20 h-20 rounded-2xl mx-auto shadow-md border border-orange-200 object-cover">
+                    <h1 class="text-xl font-extrabold text-slate-900">Thipaw Delivery & Taxi</h1>
+                    <p id="t-welcome-sub" class="text-xs text-slate-500">သီပေါမြို့တွင်း ပို့ဆောင်ခ နှုန်းထားနှင့် စည်းကမ်းချက်များ</p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h2 id="t-rates-heading" class="text-xs font-extrabold text-[#FF5722]">💵 ပို့ဆောင်ခနှင့် ဆိုင်ကယ်ကယ်ရီ နှုန်းထားများ</h2>
+                        <div class="flex items-center gap-1 bg-orange-100 p-1 rounded-xl">
+                            <button type="button" onclick="setAppLanguage('en')" id="welcome-lang-en" class="px-2.5 py-1 rounded-full text-[11px] font-bold">English</button>
+                            <button type="button" onclick="setAppLanguage('my')" id="welcome-lang-my" class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-white text-[#FF5722]">မြန်မာ</button>
+                        </div>
+                    </div>
+                    <div id="dynamic-rates-list" class="space-y-2 text-xs"></div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs space-y-2">
+                    <h2 id="t-rules-heading" class="text-xs font-extrabold text-slate-900">📋 ဝန်ဆောင်မှု စည်းကမ်းချက်များ</h2>
+                    <ul id="dynamic-rules-list" class="space-y-1.5 list-disc pl-4 text-[11px] text-slate-600 leading-relaxed"></ul>
+                </div>
+
+                <button onclick="acceptTermsAndProceed()" id="t-agree-btn" class="w-full py-4 rounded-2xl bg-[#FF5722] hover:bg-[#E64A19] text-white font-extrabold text-sm shadow-md transition">
+                    သဘောတူပါတယ် - အကောင့်ဖွင့်မည်
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. REGISTRATION & LIVE SELFIE SCREEN -->
+        <div id="register-screen" class="absolute inset-0 bg-[#F8FAFC] z-50 flex flex-col p-6 justify-center hidden">
+            <div class="bg-white rounded-3xl p-6 shadow-xl border border-slate-200/80 space-y-5 fade-in">
+                <div class="text-center space-y-1">
+                    <h2 id="reg-title" class="text-lg font-extrabold text-slate-900">Create Verified Account</h2>
+                    <p id="t-reg-sub" class="text-xs text-slate-500">အသုံးပြုသူ အကောင့်အချက်အလက် ဖြည့်သွင်းပါ</p>
+                </div>
+                <form onsubmit="handleRegister(event)" class="space-y-4">
+                    <div class="flex flex-col items-center justify-center space-y-2">
+                        <div id="avatar-preview-box" class="w-20 h-20 rounded-2xl bg-orange-50 border-2 border-dashed border-orange-300 overflow-hidden flex items-center justify-center text-orange-400 font-bold text-xs relative">
+                            <span>📷</span>
+                        </div>
+                        <input type="file" id="reg-photo" accept="image/*" capture="user" class="hidden" onchange="processVerifiedSelfie(event)">
+                        <button type="button" onclick="triggerLiveSelfieCapture()" id="t-take-selfie" class="px-4 py-2 rounded-xl bg-orange-100 text-[#FF5722] font-extrabold text-xs">
+                            ပုံရိုက်မည် (Take Selfie)
+                        </button>
+                        <span id="t-reg-photo-note" class="text-[10px] text-slate-400 text-center">လုံခြုံရေးအတွက် ကင်မရာဖြင့် လူကိုယ်တိုင်ပုံအစစ် ရိုက်ထည့်ပါ</span>
+                        <span id="selfie-verified-tag" class="hidden px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold">✅ Selfie Verified</span>
+                    </div>
+                    <div class="space-y-1">
+                        <label id="t-label-name" class="text-[11px] font-extrabold text-slate-700">နာမည်အပြည့်အစုံ</label>
+                        <input type="text" id="reg-name" required placeholder="Mg Mg" class="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-xs text-slate-950 outline-none">
+                    </div>
+                    <div class="space-y-1">
+                        <label id="t-label-phone" class="text-[11px] font-extrabold text-slate-700">ဖုန်းနံပါတ်</label>
+                        <input type="tel" id="reg-phone" required placeholder="09xxxxxxxxx" class="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-xs text-slate-950 outline-none">
+                    </div>
+                    <div class="space-y-1">
+                        <label id="t-label-address" class="text-[11px] font-extrabold text-slate-700">နေရပ်လိပ်စာ / ရပ်ကွက်</label>
+                        <input type="text" id="reg-address" required placeholder="Market Ward, Hsipaw" class="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-xs text-slate-950 outline-none">
+                    </div>
+                    <button type="submit" id="t-reg-submit" class="w-full py-3.5 rounded-xl bg-[#FF5722] text-white font-extrabold text-xs shadow-md">
+                        အကောင့်ဖောက်ပြီး အသုံးပြုမည်
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 3. MAIN APP SHELL (Clean Top Header with TD Logo) -->
+        <div id="main-app-shell" class="flex-1 flex flex-col h-screen sm:h-[850px] overflow-hidden hidden">
+            <!-- TOP HEADER -->
+            <div class="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between shrink-0 z-10 shadow-xs">
+                <div class="flex items-center gap-2.5">
+                    <img src="https://i.ibb.co/B5NfCWH9/1794811370987.jpg" alt="TD Logo" class="w-10 h-10 rounded-2xl object-cover border border-orange-200 shadow-2xs">
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <span id="t-city-badge" class="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-orange-100 text-[#FF5722]">📍 သီပေါမြို့</span>
+                            <span id="home-starting-rate" class="text-[10px] font-bold text-slate-500">From 2,000 Ks</span>
+                        </div>
+                        <h2 class="text-xs font-extrabold text-slate-900">Thipaw Delivery</h2>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="openRiderPortalGate()" id="t-rider-btn" class="px-3 py-1.5 rounded-xl bg-orange-50 border border-orange-200 text-[#FF5722] font-extrabold text-xs flex items-center gap-1 shadow-2xs">
+                        🛵 ဝန်ထမ်း
+                    </button>
+                    <button onclick="openPinModal()" class="px-3 py-1.5 rounded-xl bg-slate-900 text-white font-extrabold text-xs shadow-2xs">
+                        Admin
+                    </button>
+                </div>
+            </div>
+
+            <!-- SCROLLABLE BODY -->
+            <div id="main-scroll-area" class="flex-1 overflow-y-auto pb-24">
+
+                <!-- HOME VIEW -->
+                <div id="view-home" class="p-4 space-y-4 fade-in">
+                    <!-- SEARCH BAR -->
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">🔍</span>
+                        <input type="text" id="t-search-placeholder" placeholder="ဆိုင်နှင့် အစားအသောက် ရှာဖွေမည်..." oninput="switchBottomTab('food')"
+                            class="w-full rounded-2xl bg-white border border-slate-200/85 pl-10 pr-4 py-3 text-xs text-slate-900 shadow-2xs outline-none focus:border-[#FF5722]">
+                    </div>
+
+                    <!-- ACTIVE ORDER BANNER -->
+                    <div id="home-active-order-wrap" class="hidden"></div>
+
+                    <!-- SERVICES GRID (2x2 Clean Layout) -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="openService('food')" class="bg-white p-4 rounded-2xl border border-slate-200/80 flex items-center gap-3 text-left shadow-2xs hover:border-orange-300 transition">
+                            <div class="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center text-2xl shrink-0">🍜</div>
+                            <div>
+                                <span id="t-svc-food" class="text-xs font-extrabold text-slate-950 block">Food</span>
+                                <span id="t-svc-food-sub" class="text-[10px] text-slate-400 block mt-0.5">ဆိုင်မီနူးများ</span>
+                            </div>
+                        </button>
+                        <button onclick="openService('custom')" class="bg-white p-4 rounded-2xl border border-slate-200/80 flex items-center gap-3 text-left shadow-2xs hover:border-orange-300 transition">
+                            <div class="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center text-2xl shrink-0">🛍️</div>
+                            <div>
+                                <span id="t-svc-custom" class="text-xs font-extrabold text-slate-950 block">မှာမည်</span>
+                                <span id="t-svc-custom-sub" class="text-[10px] text-slate-400 block mt-0.5">တခြားဝယ်ခိုင်းရန်</span>
+                            </div>
+                        </button>
+                        <button onclick="openService('bike')" class="bg-white p-4 rounded-2xl border border-slate-200/80 flex items-center gap-3 text-left shadow-2xs hover:border-orange-300 transition">
+                            <div class="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center text-2xl shrink-0">🛵</div>
+                            <div>
+                                <span id="t-svc-bike" class="text-xs font-extrabold text-slate-950 block">Bike Taxi</span>
+                                <span id="t-svc-bike-sub" class="text-[10px] text-slate-400 block mt-0.5">ဆိုင်ကယ်ကယ်ရီ</span>
+                            </div>
+                        </button>
+                        <button onclick="openService('map')" class="bg-white p-4 rounded-2xl border border-slate-200/80 flex items-center gap-3 text-left shadow-2xs hover:border-orange-300 transition">
+                            <div class="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center text-2xl shrink-0">🛰️</div>
+                            <div>
+                                <span id="t-svc-map" class="text-xs font-extrabold text-slate-950 block">Satellite Map</span>
+                                <span id="t-svc-map-sub" class="text-[10px] text-slate-400 block mt-0.5">ဂြိုဟ်တုမြေပုံ</span>
+                            </div>
+                        </button>
+                    </div>
+
+                    <!-- MERCHANT / SHOP PORTAL ENTRY -->
+                    <div class="bg-gradient-to-r from-orange-500 to-[#FF5722] rounded-2xl p-4 text-white shadow-md flex items-center justify-between">
+                        <div class="space-y-1">
+                            <h3 id="t-svc-shop" class="text-sm font-extrabold">ဆိုင်ရှင်များအတွက် (Merchant Portal)</h3>
+                            <p id="t-svc-shop-sub" class="text-[11px] text-orange-100">သင့်ဆိုင်မီနူးနှင့် ဈေးနှုန်းများကို ကိုယ်တိုင်တင်ပါ</p>
+                        </div>
+                        <button onclick="openShopPortal()" class="px-4 py-2 rounded-xl bg-white text-[#FF5722] font-extrabold text-xs shadow-sm">
+                            ဆိုင်ဖွင့်မည်
+                        </button>
+                    </div>
+
+                    <!-- PARTNER SHOPS HORIZONTAL STRIP -->
+                    <div class="space-y-2.5">
+                        <div class="flex items-center justify-between">
+                            <h3 id="t-home-shops-title" class="text-xs font-extrabold text-slate-900">🏪 Thipaw Delivery ရှိ ဆိုင်များ</h3>
+                            <button onclick="openService('food')" id="t-view-all-shops" class="text-xs font-bold text-[#FF5722]">အားလုံးကြည့်မည် →</button>
+                        </div>
+                        <div id="home-shops-strip" class="flex gap-3 overflow-x-auto no-scrollbar pb-1"></div>
+                    </div>
+
+                    <!-- INFO BANNER -->
+                    <div class="bg-white rounded-2xl p-4 border border-slate-200/80 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span id="t-home-rate-lbl" class="text-xs font-bold text-slate-700">ပို့ဆောင်ခနှုန်းထား (Delivery Rates)</span>
+                            <span class="text-xs font-extrabold text-[#FF5722]">Town: 2,000 Ks</span>
+                        </div>
+                        <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+                            <span id="t-home-call-lbl" class="text-xs font-bold text-slate-700">ဖုန်းဖြင့်တိုက်ရိုက်မှာယူရန်</span>
+                            <a href="tel:09428111222" id="t-home-call-btn" class="px-3 py-1.5 rounded-xl bg-orange-100 text-[#FF5722] font-extrabold text-xs">📞 09428111222</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FOOD & SHOPS VIEW -->
+                <div id="view-food" class="p-4 space-y-4 hidden fade-in">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 id="t-food-header" class="text-base font-extrabold text-slate-900">🍜 Food & ဆိုင်မီနူးများ</h2>
+                            <p id="t-food-sub" class="text-[11px] text-slate-500">ဆိုင်တစ်ဆိုင် သို့မဟုတ် ဆိုင်များစွာမှ အစားအသောက်များကို ပေါင်းစပ်မှာယူနိုင်ပါသည်</p>
+                        </div>
+                        <button onclick="openService('custom')" id="t-cust-buy-btn" class="px-3 py-1.5 rounded-xl bg-orange-100 text-[#FF5722] font-extrabold text-xs shrink-0">
+                            + တခြားမှာမည်
+                        </button>
+                    </div>
+
+                    <div class="space-y-2">
+                        <input type="text" id="food-menu-search" placeholder="Search menu items or shops..." oninput="renderFoodShopBrowser()"
+                            class="w-full rounded-xl bg-white border border-slate-200 px-3.5 py-2.5 text-xs text-slate-950 outline-none">
+                        <div class="flex items-center justify-between">
+                            <span id="t-shop-channels-lbl" class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">ဆိုင်ရွေးချယ်ရန်</span>
+                            <span id="food-shop-count" class="text-[11px] font-bold text-[#FF5722]">0 Shops</span>
+                        </div>
+                        <div id="food-shop-pills" class="flex gap-2 overflow-x-auto no-scrollbar pb-1"></div>
+                    </div>
+
+                    <div id="food-selected-shop-panel" class="space-y-3"></div>
+
+                    <div class="bg-white rounded-2xl p-4 border border-orange-200 shadow-sm space-y-3">
+                        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                            <h3 id="t-cart-title" class="text-xs font-extrabold text-slate-900">🛒 သင့်မှာယူမှု ရွေးချယ်ချက်များ (Cart)</h3>
+                            <span id="cart-shop-badge" class="hidden px-2 py-0.5 rounded-full bg-orange-100 text-[#FF5722] text-[10px] font-extrabold"></span>
+                        </div>
+                        <div id="food-cart-list" class="space-y-2">
+                            <p id="t-cart-empty" class="text-xs text-slate-400 text-center py-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">အထက်ပါ ဆိုင်မီနူးများမှ '+ Add' ကို နှိပ်၍ ပစ္စည်းများ ထည့်ပါ</p>
+                        </div>
+                        <div id="food-cart-summary" class="hidden space-y-2 pt-2 border-t border-slate-100 text-xs">
+                            <div class="flex justify-between text-slate-600">
+                                <span id="t-items-subtotal-lbl">ပစ္စည်းတန်ဖိုး စုစုပေါင်း:</span>
+                                <span id="cart-items-total" class="font-bold">0 Ks</span>
+                            </div>
+                            <div class="flex justify-between text-slate-600">
+                                <span id="t-deliv-fee-lbl">ပို့ဆောင်ခ:</span>
+                                <span id="cart-deliv-fee" class="font-bold text-[#FF5722]">2,000 Ks</span>
+                            </div>
+                            <div class="flex justify-between text-slate-900 font-extrabold pt-1 border-t border-slate-100 text-sm">
+                                <span id="t-grand-total-lbl">ခန့်မှန်းကျသင့်ငွေ စုစုပေါင်း:</span>
+                                <span id="cart-grand-total" class="text-[#FF5722]">0 Ks</span>
+                            </div>
+                        </div>
+                        <form onsubmit="submitFoodOrder(event)" class="space-y-3 pt-2">
+                            <div class="space-y-1">
+                                <label id="t-deliv-addr-lbl" class="text-[11px] font-extrabold text-slate-700">ပို့ဆောင်ရမည့် လိပ်စာ (Delivery Address)</label>
+                                <input type="text" id="food-address" required placeholder="Ward / Street in Hsipaw" oninput="recalculateFoodCartTotals()" class="w-full rounded-xl bg-slate-50 border border-slate-200 px-3 py-2 text-xs text-slate-950 outline-none">
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button type="button" onclick="captureFoodLocation()" id="food-loc-btn" class="flex-1 py-2.5 px-3 rounded-xl bg-orange-50 border border-orange-200 text-[#FF5722] font-bold text-xs flex items-center justify-center gap-1.5">
+                                    <span>📍</span><span id="t-attach-gps">လက်ရှိ GPS တည်နေရာ ထည့်မည်</span>
+                                </button>
+                                <span id="food-coords-text" class="text-[10px] font-mono font-bold text-slate-500"></span>
+                            </div>
+                            <button type="submit" id="t-place-food-btn" class="w-full py-3.5 rounded-xl bg-[#FF5722] hover:bg-[#E64A19] text-white font-extrabold text-xs shadow-md">
+                                အော်ဒါတင်မည် (Place Unified Order)
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- CUSTOM BUY VIEW -->
+                <div id="view-custom" class="p-4 space-y-4 hidden fade-in">
+                    <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200 space-y-4">
+                        <div>
+                            <h2 id="t-custom-header" class="text-base font-extrabold text-slate-900">🛍️ ပစ္စည်းအမျိုးမျိုး မှာယူရန် (Custom Buy)</h2>
+                            <p id="t-custom-sub" class="text-[11px] text-slate-500">သီပေါမြို့တွင်း မည်သည့်ဆိုင် သို့မဟုတ် ဈေးမှမဆို ဝယ်ခိုင်းနိုင်ပါသည်</p>
+                        </div>
+                        <form onsubmit="submitCustomOrder(event)" class="space-y-3.5">
+                            <div class="space-y-1">
+                                <label id="t-custom-shop-lbl" class="text-[11px] font-extrabold text-slate-700">ဆိုင် / ဈေးနာမည် (မထည့်လည်းရသည်)</label>
+                                <input type="text" id="custom-shop-name" placeholder="e.g. Central Market / Pharmacy" class="w-full rounded-xl bg-slate-50 border border-slate-200 px-3 py-2 text-xs text-slate-950 outline-none">
+                            </div>
+                            <div class="space-y-1">
+                                <label id="t-custom-items-lbl" class="text-[11px] font-extrabold text-slate-700">ဘာတွေဝယ်ခိုင်းချင်ပါသလဲ? (Items & Quantities)</label>
+                                <textarea id="custom-items" required rows="3" placeholder="1. Paracetamol 1 pack&#10;2. Eggs 10 pcs" class="w-full rounded-xl bg-slate-50 border border-slate-200 p-3 text-xs text-slate-950 outline-none"></textarea>
+                            </div>
+                            <div class="space-y-1">
+                                <label id="t-custom-addr-lbl" class="text-[11px] font-extrabold text-slate-700">ပို့ဆောင်ရမည့် လိပ်စာ</label>
+                                <input type="text" id="custom-address" required placeholder="Your address in Hsipaw" oninput="updateCustomFeeDisplay()" class="w-full rounded-xl bg-slate-50 border border-slate-200 px-3 py-2 text-xs text-slate-950 outline-none">
+                            </div>
+                            <button type="button" onclick="captureCustomLocation()" id="custom-loc-btn" class="w-full py-2.5 rounded-xl bg-orange-50 border border-orange-200 text-[#FF5722] font-bold text-xs flex items-center justify-center gap-1.5">
+                                <span>📍</span><span id="t-custom-gps-btn">လက်ရှိ GPS တည်နေရာ ထည့်မည်</span>
+                            </button>
+                            <div class="bg-orange-50/70 p-3 rounded-xl border border-orange-200 flex items-center justify-between text-xs">
+                                <span id="t-custom-fee-lbl" class="font-bold text-slate-700">ခန့်မှန်းပို့ဆောင်ခ:</span>
+                                <span id="custom-fee-display" class="font-extrabold text-[#FF5722]">2,000 Ks + Receipt</span>
+                            </div>
+                            <button type="submit" id="t-custom-submit-btn" class="w-full py-3.5 rounded-xl bg-[#FF5722] text-white font-extrabold text-xs shadow-md">
+                                အော်ဒါတင်မည်
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- BIKE TAXI VIEW (GRAB STYLE PIN & MAP PICKING) -->
+                <div id="view-bike" class="p-4 space-y-4 hidden fade-in">
+                    <div class="bg-gradient-to-r from-orange-500 to-[#FF5722] text-white p-4 rounded-2xl shadow-md flex items-center justify-between">
+                        <div>
+                            <span id="t-bike-now" class="text-[10px] font-extrabold bg-white/20 px-2 py-0.5 rounded-md uppercase">Book Bike Taxi Now</span>
+                            <h2 class="text-base font-extrabold mt-1">🛵 Thipaw Bike Taxi</h2>
+                        </div>
+                        <span class="text-2xl">⚡</span>
+                    </div>
+
+                    <!-- GRAB STYLE RIDE BOOKING BOX -->
+                    <div class="bg-white rounded-3xl p-4 shadow-sm border border-slate-200 space-y-3">
+                        <form onsubmit="submitBikeOrder(event)" class="space-y-3">
+                            <!-- PICKUP PIN -->
+                            <div class="bg-slate-50 rounded-2xl p-3 border border-slate-200 space-y-2">
+                                <div class="flex items-center gap-3">
+                                    <span class="w-3 h-3 rounded-full bg-blue-600 shrink-0"></span>
+                                    <input type="text" id="bike-pickup" required placeholder="Current Location / Pickup Pin" onclick="activeBikeField='pickup'"
+                                        class="w-full bg-transparent text-xs font-bold text-slate-900 outline-none">
+                                </div>
+                                <div class="flex items-center justify-between pt-2 border-t border-slate-200/60 text-[11px]">
+                                    <button type="button" onclick="captureBikePickupGPS()" class="text-blue-600 font-extrabold flex items-center gap-1">
+                                        <span>🎯</span><span id="t-grab-curr-loc">လက်ရှိတည်နေရာ (Current Location)</span>
+                                    </button>
+                                    <button type="button" onclick="openGoogleMapPicker('pickup')" class="text-[#FF5722] font-extrabold flex items-center gap-1">
+                                        <span>🛰️</span><span id="t-choose-on-map">မြေပုံပေါ်တွင် Pin ထောက်မည်</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- DROPOFF PIN -->
+                            <div class="bg-slate-50 rounded-2xl p-3 border border-slate-200 space-y-2">
+                                <div class="flex items-center gap-3">
+                                    <span class="w-3 h-3 rounded-full bg-[#FF5722] shrink-0"></span>
+                                    <input type="text" id="bike-dropoff" required placeholder="Where to? (Drop-off Pin destination)" onclick="activeBikeField='dropoff'" oninput="recalculateBikeFare()"
+                                        class="w-full bg-transparent text-xs font-extrabold text-slate-900 outline-none">
+                                </div>
+                                <div class="flex items-center justify-between pt-2 border-t border-slate-200/60 text-[11px]">
+                                    <span class="text-slate-400">Tap map pin for exact drop-off</span>
+                                    <button type="button" onclick="openGoogleMapPicker('dropoff')" class="text-[#FF5722] font-extrabold flex items-center gap-1">
+                                        <span>🛰️</span><span id="t-choose-on-map-2">မြေပုံပေါ်တွင် Pin ထောက်မည်</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- SUGGESTED LANDMARKS -->
+                            <div class="space-y-1.5">
+                                <span id="t-suggested-lbl" class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">အကြံပြုထားသော နေရာများ</span>
+                                <div id="grab-suggested-places" class="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden divide-y divide-slate-100"></div>
+                            </div>
+
+                            <!-- FARE DISPLAY -->
+                            <div class="bg-orange-50 p-3.5 rounded-2xl border border-orange-200 flex items-center justify-between">
+                                <div>
+                                    <h4 id="t-bike-tier-name" class="text-xs font-extrabold text-slate-900">Thipaw Bike Taxi</h4>
+                                    <p id="bike-zone-label" class="text-[10px] text-slate-500">Town Base Zone</p>
+                                </div>
+                                <span id="bike-fare-display" class="text-lg font-extrabold text-[#FF5722]">4,000 Ks</span>
+                            </div>
+
+                            <button type="submit" id="t-book-bike-btn" class="w-full py-3.5 rounded-2xl bg-[#FF5722] hover:bg-[#E64A19] text-white font-extrabold text-xs shadow-md">
+                                ဆိုင်ကယ်ကယ်ရီ အတည်ပြုမည်
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- SHOP MANAGER VIEW -->
+                <div id="view-shop-manager" class="p-4 space-y-4 hidden fade-in">
+                    <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex items-center justify-between">
+                        <div>
+                            <h2 id="t-shopmgr-title" class="text-sm font-extrabold text-slate-900">🏪 ဆိုင် Channel စီမံရန်</h2>
+                            <p id="t-shopmgr-sub" class="text-[11px] text-slate-500">သင့်ဆိုင်နှင့် မီနူးဈေးနှုန်းများကို ကိုယ်တိုင်တင်ပါ</p>
+                        </div>
+                        <button onclick="openNewShopForm()" id="t-newshop-btn" class="px-3 py-1.5 rounded-xl bg-orange-100 text-[#FF5722] font-extrabold text-xs">
+                            + ဆိုင်အသစ်
+                        </button>
+                    </div>
+
+                    <form id="shop-setup-form" onsubmit="saveShopChannel(event)" class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                        <h3 id="t-regnewshop-title" class="text-xs font-extrabold text-slate-900">🏪 ဆိုင်အသစ် ဖွင့်လှစ်ရန်</h3>
+                        <div class="flex items-center gap-3">
+                            <div id="shop-photo-preview" class="w-14 h-14 rounded-xl bg-orange-50 border border-orange-200 flex flex-col items-center justify-center text-orange-400 font-bold text-xs shrink-0 cursor-pointer overflow-hidden" onclick="document.getElementById('shop-photo-file').click()">
+                                <span>📷</span><span id="t-shopphoto-lbl" class="text-[9px]">ဆိုင်ပုံ</span>
+                            </div>
+                            <input type="file" id="shop-photo-file" accept="image/*" class="hidden" onchange="previewShopPhoto(event)">
+                            <div class="flex-1 space-y-2">
+                                <input type="text" id="shop-name-input" required placeholder="Shop Name (e.g. Shan Noodle)" class="w-full rounded-xl bg-slate-50 border border-slate-200 px-3 py-2 text-xs text-slate-950 outline-none">
+                                <input type="tel" id="shop-phone-input" required placeholder="Phone Number" class="w-full rounded-xl bg-slate-50 border border-slate-200 px-3 py-2 text-xs text-slate-950 outline-none">
+                            </div>
+                        </div>
+                        <input type="text" id="shop-address-input" required placeholder="Ward / Street Address" class="w-full rounded-xl bg-slate-50 border border-slate-200 px-3 py-2 text-xs text-slate-950 outline-none">
+                        <button type="submit" id="t-saveshop-btn" class="w-full py-2.5 rounded-xl bg-[#FF5722] text-white font-extrabold text-xs">
+                            ဆိုင် Channel သိမ်းဆည်းမည်
+                        </button>
+                    </form>
+
+                    <div id="shop-manager-list" class="space-y-4"></div>
+                </div>
+
+                <!-- ACTIVITY VIEW -->
+                <div id="view-activity" class="p-4 space-y-4 hidden fade-in">
+                    <div>
+                        <h2 id="t-activity-header" class="text-base font-extrabold text-slate-900">📋 မှာယူမှု မှတ်တမ်း (Activity)</h2>
+                        <p id="t-activity-sub" class="text-[11px] text-slate-500">အခြေအနေ ကြည့်ရှုနိုင်ပြီး ပို့ဆောင်သူနှင့် စာတိုပေးပို့နိုင်ပါသည်</p>
+                    </div>
+                    <div id="user-activity-list" class="space-y-3"></div>
+                </div>
+
+                <!-- SATELLITE MAP VIEW -->
+                <div id="view-map" class="p-4 space-y-4 hidden fade-in">
+                    <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h2 id="t-map-title" class="text-sm font-extrabold text-slate-900">🛰️ Satellite Map</h2>
+                                <p id="t-map-sub" class="text-[11px] text-slate-500">သီပေါမြို့ ဂြိုဟ်တုမြေပုံ မြင်ကွင်း</p>
+                            </div>
+                            <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+                                <button type="button" onclick="setMainGoogleMapType('k')" id="btn-map-sat" class="px-2.5 py-1 rounded-lg bg-white text-[#FF5722] text-xs font-bold shadow-2xs">Satellite</button>
+                                <button type="button" onclick="setMainGoogleMapType('m')" id="btn-map-std" class="px-2.5 py-1 rounded-lg text-slate-600 text-xs font-bold">Standard</button>
+                            </div>
+                        </div>
+                        <div class="w-full h-80 rounded-2xl overflow-hidden border border-slate-200 relative">
+                            <iframe id="main-google-map-iframe" width="100%" height="100%" frameborder="0" style="border:0" src="" allowfullscreen></iframe>
+                        </div>
+                        <div class="flex items-center justify-between text-xs pt-1">
+                            <div><span id="t-coords-lbl" class="text-slate-400">တည်နေရာ:</span> <span id="main-map-coords" class="font-mono font-bold">22.6238, 97.3005</span></div>
+                            <button onclick="locateUserOnGoogleSatelliteMap()" id="t-locme-btn" class="px-3 py-1.5 rounded-xl bg-orange-100 text-[#FF5722] font-extrabold">📍 ကျွန်ုပ်နေရာ ရှာမည်</button>
+                        </div>
+                        <a id="main-map-gmaps-link" href="#" target="_blank" class="block w-full py-3 rounded-xl bg-slate-900 text-white font-bold text-xs text-center">
+                            Open in Google Maps App ↗
+                        </a>
+                    </div>
+                </div>
+
+                <!-- ACCOUNT VIEW -->
+                <div id="view-account" class="p-4 space-y-4 hidden fade-in">
+                    <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200 text-center space-y-3">
+                        <img id="account-avatar" src="" alt="Avatar" class="w-20 h-20 rounded-2xl mx-auto object-cover border-2 border-orange-200 shadow-sm">
+                        <div>
+                            <h2 id="account-name" class="text-base font-extrabold text-slate-900">User Name</h2>
+                            <p id="account-phone" class="text-xs text-slate-500 mt-0.5">09xxxxxxxxx</p>
+                            <p id="account-address" class="text-xs font-bold text-[#FF5722] mt-1">📍 Hsipaw</p>
+                        </div>
+                    </div>
+
+                    <!-- SETTINGS CARD -->
+                    <div class="bg-white rounded-2xl p-4 border border-slate-200/80 space-y-3">
+                        <h3 id="t-settings-heading" class="text-xs font-extrabold text-slate-900">Settings & Permissions</h3>
+                        <div class="flex items-center justify-between py-2 border-b border-slate-100 text-xs">
+                            <span id="t-lang-setting-lbl" class="font-bold text-slate-700">App Language</span>
+                            <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+                                <button type="button" onclick="setAppLanguage('en')" id="set-lang-en" class="px-3 py-1 rounded-lg text-xs font-bold">English</button>
+                                <button type="button" onclick="setAppLanguage('my')" id="set-lang-my" class="px-3 py-1 rounded-lg text-xs font-bold bg-[#FF5722] text-white">မြန်မာ</button>
+                            </div>
+                        </div>
+                        <div class="space-y-2 pt-1">
+                            <div class="flex items-center justify-between text-xs">
+                                <span id="t-perm-title" class="font-bold text-slate-700">Device Permissions</span>
+                                <button onclick="requestAllAppPermissions()" id="t-grant-all-perm" class="px-3 py-1.5 rounded-xl bg-orange-100 text-[#FF5722] font-extrabold text-[11px]">အားလုံးဖွင့်မည်</button>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2 text-center text-[11px]">
+                                <div class="bg-slate-50 p-2 rounded-xl border border-slate-200">
+                                    <p class="font-bold text-slate-700">Location</p>
+                                    <span id="perm-loc-status" class="text-[10px] text-slate-400">Not Allowed</span>
+                                </div>
+                                <div class="bg-slate-50 p-2 rounded-xl border border-slate-200">
+                                    <p class="font-bold text-slate-700">Camera</p>
+                                    <span id="perm-cam-status" class="text-[10px] text-slate-400">Not Allowed</span>
+                                </div>
+                                <div class="bg-slate-50 p-2 rounded-xl border border-slate-200">
+                                    <p class="font-bold text-slate-700">Notifications</p>
+                                    <span id="perm-noti-status" class="text-[10px] text-slate-400">Not Allowed</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ACCOUNT ACTIONS -->
+                    <div class="space-y-2">
+                        <button onclick="openEditProfile()" id="t-acc-edit" class="w-full py-3 px-4 rounded-2xl bg-white border border-slate-200 text-slate-800 font-extrabold text-xs text-left shadow-2xs">
+                            ✏️ ပရိုဖိုင်နှင့် ဓာတ်ပုံ ပြင်ဆင်မည်
+                        </button>
+                        <button onclick="openShopPortal()" id="t-acc-shop" class="w-full py-3 px-4 rounded-2xl bg-white border border-slate-200 text-slate-800 font-extrabold text-xs text-left shadow-2xs">
+                            🏪 ဆိုင် Channel ဖွင့်ရန် / စီမံရန်
+                        </button>
+                        <button onclick="openRiderPortalGate()" id="t-acc-rider" class="w-full py-3 px-4 rounded-2xl bg-white border border-slate-200 text-slate-800 font-extrabold text-xs text-left shadow-2xs">
+                            🛵 ဝန်ထမ်း အော်ဒါကောက်ရန် နေရာ
+                        </button>
+                        <button onclick="openAboutModal()" id="t-acc-about" class="w-full py-3 px-4 rounded-2xl bg-white border border-slate-200 text-slate-800 font-extrabold text-xs text-left shadow-2xs">
+                            ℹ️ App အကြောင်းနှင့် စည်းမျဉ်းစည်းကမ်းများ
+                        </button>
+                        <button onclick="openPinModal()" id="t-acc-admin" class="w-full py-3 px-4 rounded-2xl bg-slate-900 text-white font-extrabold text-xs text-left shadow-sm">
+                            🔒 Admin စီမံခန့်ခွဲမှု နေရာ
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- BOTTOM NAVIGATION BAR (Exact 4 icons matching the mockup) -->
+            <div class="bg-white border-t border-slate-200 px-4 py-2.5 flex items-center justify-around shrink-0 z-20">
+                <button onclick="switchBottomTab('home')" id="nav-home" class="flex flex-col items-center text-[#FF5722] font-bold text-[11px] gap-0.5">
+                    <span class="text-lg">🏠</span>
+                    <span id="t-nav-home">Home</span>
+                </button>
+                <button onclick="switchBottomTab('activity')" id="nav-activity" class="flex flex-col items-center text-slate-400 font-semibold text-[11px] gap-0.5 relative">
+                    <span class="text-lg">📋</span>
+                    <span id="t-nav-activity">Activity</span>
+                    <span id="nav-unread-dot" class="hidden absolute top-0 right-1 w-2 h-2 rounded-full bg-[#FF5722]"></span>
+                </button>
+                <button onclick="switchBottomTab('map')" id="nav-map" class="flex flex-col items-center text-slate-400 font-semibold text-[11px] gap-0.5">
+                    <span class="text-lg">🛰️</span>
+                    <span id="t-nav-map">Map</span>
+                </button>
+                <button onclick="switchBottomTab('account')" id="nav-account" class="flex flex-col items-center text-slate-400 font-semibold text-[11px] gap-0.5">
+                    <span class="text-lg">👤</span>
+                    <span id="t-nav-account">Profile</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 4. RIDER DISPATCH PORTAL SCREEN -->
+        <div id="rider-screen" class="absolute inset-0 bg-[#F8FAFC] z-50 flex flex-col hidden overflow-y-auto">
+            <div class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white px-4 py-3.5 flex items-center justify-between shrink-0 shadow-md">
+                <div class="flex items-center gap-2.5">
+                    <button onclick="exitRiderPortal()" class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-bold">←</button>
+                    <div>
+                        <h2 id="t-riderhdr-title" class="text-sm font-extrabold">Rider အော်ဒါကောက်ရန် နေရာ</h2>
+                        <p id="rider-header-sub" class="text-[11px] text-teal-100">Verified Staff Portal</p>
+                    </div>
+                </div>
+                <button onclick="exitRiderPortal()" id="t-exit-btn" class="px-3 py-1.5 rounded-xl bg-white/20 text-xs font-extrabold">Exit</button>
+            </div>
+
+            <div class="p-4 space-y-4 flex-1">
+                <div id="rider-register-box" class="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-4 hidden">
+                    <div class="text-center space-y-1">
+                        <div class="w-12 h-12 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center justify-center text-xl mx-auto">🛵</div>
+                        <h3 id="t-riderreg-title" class="text-base font-extrabold text-slate-900">ဝန်ထမ်း (Rider) အဖြစ် စာရင်းပေးသွင်းရန်</h3>
+                        <p id="t-riderreg-sub" class="text-xs text-slate-500">သင့်နာမည်နှင့် ဖုန်းနံပါတ် ထည့်ပါ။ Admin မှ အတည်ပြုပေးရပါမည်။</p>
+                    </div>
+                    <form onsubmit="submitRiderApplication(event)" class="space-y-3">
+                        <div class="space-y-1">
+                            <label id="t-ridername-lbl" class="text-[11px] font-extrabold text-slate-700">ဝန်ထမ်း နာမည်အပြည့်အစုံ</label>
+                            <input type="text" id="rider-app-name" required placeholder="Kyaw Kyaw" class="w-full rounded-xl bg-slate-50 border border-slate-200 px-3 py-2 text-xs text-slate-950 outline-none">
+                        </div>
+                        <div class="space-y-1">
+                            <label id="t-riderphone-lbl" class="text-[11px] font-extrabold text-slate-700">ဖုန်းနံပါတ်</label>
+                            <input type="tel" id="rider-app-phone" required placeholder="09xxxxxxxxx" class="w-full rounded-xl bg-slate-50 border border-slate-200 px-3 py-2 text-xs text-slate-950 outline-none">
+                        </div>
+                        <button type="submit" id="t-reqappr-btn" class="w-full py-3 rounded-xl bg-emerald-600 text-white font-extrabold text-xs shadow-md">
+                            Admin အတည်ပြုချက် တောင်းခံမည်
+                        </button>
+                    </form>
+                </div>
+
+                <div id="rider-pending-box" class="bg-white rounded-3xl p-6 text-center space-y-4 shadow-sm border border-slate-200 hidden">
+                    <div class="w-16 h-16 bg-amber-100 text-amber-700 rounded-3xl flex items-center justify-center text-2xl mx-auto animate-pulse">⏳</div>
+                    <div>
+                        <h3 id="t-waitappr-title" class="text-base font-extrabold text-slate-900">Admin ၏ အတည်ပြုချက်ကို စောင့်ဆိုင်းနေပါသည်</h3>
+                        <p id="t-waitappr-sub" class="text-xs text-slate-500 mt-1">သင့်တောင်းဆိုချက်ကို Admin ထံ ပို့ပြီးပါပြီ။ အတည်ပြုပြီးပါက အော်ဒါဘုတ် ပွင့်လာပါမည်။</p>
+                    </div>
+                    <button onclick="checkRiderApprovalStatus()" id="t-refreshstatus-btn" class="w-full py-3 rounded-xl bg-slate-100 text-slate-800 font-extrabold text-xs">
+                        အခြေအနေ စစ်ဆေးမည်
+                    </button>
+                </div>
+
+                <div id="rider-board-box" class="space-y-4 hidden">
+                    <div id="rider-my-active-wrap" class="space-y-3"></div>
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <h3 id="t-availpool-lbl" class="text-xs font-extrabold text-slate-400 uppercase tracking-wider">ရယူနိုင်သော အော်ဒါများ</h3>
+                            <span id="rider-pool-count" class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold">0</span>
+                        </div>
+                        <div id="rider-available-list" class="space-y-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. ADMIN CONTROL PANEL SCREEN -->
+        <div id="admin-screen" class="absolute inset-0 bg-[#F8FAFC] z-50 flex flex-col hidden overflow-y-auto">
+            <div class="bg-slate-900 text-white px-4 py-3.5 flex items-center justify-between shrink-0 shadow-md">
+                <div class="flex items-center gap-2.5">
+                    <button onclick="exitAdmin()" class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-bold">←</button>
+                    <div>
+                        <h2 id="t-adminhdr-title" class="text-sm font-extrabold">Admin စီမံခန့်ခွဲမှု နေရာ</h2>
+                        <p id="t-adminhdr-sub" class="text-[11px] text-slate-400">အော်ဒါများ၊ ဝန်ထမ်းများနှင့် ပို့ဆောင်ခ နှုန်းထားများ</p>
+                    </div>
+                </div>
+                <button onclick="exitAdmin()" id="t-adminexit-btn" class="px-3 py-1.5 rounded-xl bg-white/20 text-xs font-extrabold">Exit</button>
+            </div>
+
+            <div class="bg-white border-b border-slate-200 px-4 py-2.5 flex items-center gap-2 overflow-x-auto no-scrollbar shrink-0">
+                <button onclick="switchAdminTab('orders')" id="adm-tab-orders" class="px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-bold whitespace-nowrap">📦 Live Orders (<span id="admin-count">0</span>)</button>
+                <button onclick="switchAdminTab('staff')" id="adm-tab-staff" class="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 text-xs font-bold whitespace-nowrap">🛵 Staff Approvals (<span id="admin-staff-pending-badge" class="text-red-600">0</span>)</button>
+                <button onclick="switchAdminTab('rates')" id="adm-tab-rates" class="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 text-xs font-bold whitespace-nowrap">💵 Rates & Rules</button>
+            </div>
+
+            <div class="p-4 space-y-4 flex-1">
+                <div id="admin-view-orders" class="space-y-3">
+                    <div id="admin-orders-container" class="space-y-3"></div>
+                </div>
+
+                <div id="admin-view-staff" class="space-y-4 hidden">
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 space-y-2">
+                        <h3 id="t-ridersec-title" class="text-xs font-extrabold text-slate-900">ဝန်ထမ်း လုံခြုံရေး စနစ် (Staff Security)</h3>
+                        <p id="t-ridersec-sub" class="text-[11px] text-slate-500">ဤနေရာတွင် ဝန်ထမ်းအသစ်များကို အတည်ပြုခြင်း သို့မဟုတ် ငြင်းပယ်ခြင်း (ဖျက်ခြင်း) ပြုလုပ်နိုင်ပါသည်။</p>
+                    </div>
+                    <div id="admin-staff-list" class="space-y-3"></div>
+                </div>
+
+                <div id="admin-view-rates" class="space-y-4 hidden">
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 space-y-4">
+                        <h3 id="t-editrates-title" class="text-xs font-extrabold text-slate-900">💵 ပို့ဆောင်ခနှင့် ကယ်ရီခနှုန်းထားများ ပြင်ဆင်ရန် (Ks)</h3>
+                        <p id="t-editrates-sub" class="text-[11px] text-slate-500">Order နှင့် Bike Taxi နှုန်းထားများကို သီးသန့်စီ သတ်မှတ်နိုင်ပါသည်။</p>
+                        
+                        <form onsubmit="saveAdminRates(event)" class="space-y-3 text-xs">
+                            <div class="p-3 bg-orange-50 rounded-xl border border-orange-200 space-y-3">
+                                <h4 class="font-extrabold text-[#FF5722]">📦 Order & Custom Buy Rates</h4>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="font-bold text-slate-700">Town Base (ကျပ်)</label>
+                                        <input type="number" id="cfg-order-town" required class="w-full mt-1 rounded-lg border border-slate-300 bg-white px-3 py-2 font-bold text-slate-950">
+                                    </div>
+                                    <div>
+                                        <label class="font-bold text-slate-700">Outer Zone (ကျပ်)</label>
+                                        <input type="number" id="cfg-order-outer" required class="w-full mt-1 rounded-lg border border-slate-300 bg-white px-3 py-2 font-bold text-slate-950">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="font-bold text-slate-700">Multi-Shop Extra Stop (+ကျပ်)</label>
+                                    <input type="number" id="cfg-order-extrastop" required class="w-full mt-1 rounded-lg border border-slate-300 bg-white px-3 py-2 font-bold text-slate-950">
+                                </div>
+                            </div>
+
+                            <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-200 space-y-3">
+                                <h4 class="font-extrabold text-emerald-800">🛵 Bike Taxi Rates</h4>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <div>
+                                        <label class="font-bold text-slate-700">Town (ကျပ်)</label>
+                                        <input type="number" id="cfg-bike-town" required class="w-full mt-1 rounded-lg border border-slate-300 bg-white px-2.5 py-2 font-bold text-slate-950">
+                                    </div>
+                                    <div>
+                                        <label class="font-bold text-slate-700">Outer (ကျပ်)</label>
+                                        <input type="number" id="cfg-bike-outer" required class="w-full mt-1 rounded-lg border border-slate-300 bg-white px-2.5 py-2 font-bold text-slate-950">
+                                    </div>
+                                    <div>
+                                        <label class="font-bold text-slate-700">Bawgyo (ကျပ်)</label>
+                                        <input type="number" id="cfg-bike-bawgyo" required class="w-full mt-1 rounded-lg border border-slate-300 bg-white px-2.5 py-2 font-bold text-slate-950">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" id="t-saverates-btn" class="w-full py-3 rounded-xl bg-[#FF5722] text-white font-extrabold">
+                                နှုန်းထားအသစ် သိမ်းဆည်းမည်
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 space-y-3">
+                        <h3 id="t-editterms-title" class="text-xs font-extrabold text-slate-900">📋 စည်းမျဉ်းစည်းကမ်းများ ပြင်ဆင်ရန်</h3>
+                        <p id="t-editterms-sub" class="text-[11px] text-slate-500">စာကြောင်းတစ်ကြောင်းချင်းစီသည် Terms နှင့် About စာမျက်နှာများတွင် ပေါ်လာပါမည်။</p>
+                        <form onsubmit="saveAdminRules(event)" class="space-y-3">
+                            <textarea id="cfg-rules-textarea" rows="4" class="w-full rounded-xl border border-slate-300 p-3 text-xs text-slate-950 outline-none"></textarea>
+                            <button type="submit" id="t-saveterms-btn" class="w-full py-3 rounded-xl bg-slate-900 text-white font-extrabold text-xs">
+                                စည်းကမ်းချက်များ အသစ်ပြင်ဆင်မည်
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. GRAB STYLE SATELLITE MAP PICKER MODAL -->
+        <div id="gmap-picker-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+            <div class="bg-white rounded-3xl max-w-[440px] w-full p-5 shadow-2xl space-y-4 fade-in">
+                <div class="flex items-center justify-between">
+                    <h3 id="gmap-picker-title" class="text-sm font-extrabold text-slate-900">🛰️ မြေပုံတွင် Pin ထောက်ရန် (Grab Pin)</h3>
+                    <button onclick="closeGoogleMapPicker()" class="w-8 h-8 rounded-full bg-slate-100 font-bold text-slate-600">✕</button>
+                </div>
+                <p id="t-mappicker-sub" class="text-[11px] text-slate-500">မြေပုံပေါ်တွင် အလိုရှိသော နေရာကို တိုက်ရိုက်ထောက်၍ ရွေးချယ်ပါ</p>
+
+                <div class="w-full h-64 rounded-2xl overflow-hidden border border-slate-200 relative">
+                    <iframe id="picker-google-map-iframe" width="100%" height="100%" frameborder="0" style="border:0" src="" allowfullscreen></iframe>
+                </div>
+
+                <div class="space-y-1">
+                    <span id="t-quickmark-lbl" class="text-[10px] font-bold text-slate-400 uppercase">အမြန်ရွေးချယ်ရန် အထင်ကရနေရာများ:</span>
+                    <div class="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
+                        <button type="button" onclick="selectHsipawLandmark(22.6238, 97.3005, 'Hsipaw Central Market')" class="px-2.5 py-1.5 rounded-lg bg-orange-50 border border-orange-200 text-[#FF5722] font-bold text-[11px] whitespace-nowrap">📍 Central Market</button>
+                        <button type="button" onclick="selectHsipawLandmark(22.6295, 97.2950, 'Hsipaw Haw Palace')" class="px-2.5 py-1.5 rounded-lg bg-orange-50 border border-orange-200 text-[#FF5722] font-bold text-[11px] whitespace-nowrap">📍 Haw Palace</button>
+                        <button type="button" onclick="selectHsipawLandmark(22.6170, 97.3110, 'Dokhtawaddy Bridge Gate')" class="px-2.5 py-1.5 rounded-lg bg-orange-50 border border-orange-200 text-[#FF5722] font-bold text-[11px] whitespace-nowrap">📍 Bridge Gate</button>
+                        <button type="button" onclick="selectHsipawLandmark(22.6580, 97.2650, 'Bawgyo Pagoda')" class="px-2.5 py-1.5 rounded-lg bg-orange-50 border border-orange-200 text-[#FF5722] font-bold text-[11px] whitespace-nowrap">📍 Bawgyo Pagoda</button>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between text-xs bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                    <button type="button" onclick="useLiveGpsInPicker()" id="t-usegps-btn" class="text-[#FF5722] font-extrabold flex items-center gap-1">🎯 လက်ရှိ GPS ယူမည်</button>
+                    <span id="picker-coords-display" class="font-mono font-bold text-slate-950">22.6238, 97.3005</span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5">
+                    <button type="button" onclick="closeGoogleMapPicker()" id="t-cancelmap-btn" class="py-3 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs">မရွေးတော့ပါ</button>
+                    <button type="button" onclick="confirmGoogleMapPickerSelection()" id="t-confmap-btn" class="py-3 rounded-xl bg-[#FF5722] text-white font-extrabold text-xs">ဤနေရာကို အတည်ပြုမည်</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7. ABOUT MODAL -->
+        <div id="about-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+            <div class="bg-white rounded-3xl max-w-[430px] w-full max-h-[85vh] overflow-y-auto p-6 shadow-2xl space-y-4 fade-in">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <img src="https://i.ibb.co/B5NfCWH9/1794811370987.jpg" alt="TD" class="w-10 h-10 rounded-xl border border-slate-200">
+                        <div>
+                            <h3 id="t-about-title" class="text-base font-extrabold text-slate-900">Thipaw Delivery အကြောင်း</h3>
+                            <p class="text-[11px] text-slate-500">Version 2.0 • Hsipaw Local Super-App</p>
+                        </div>
+                    </div>
+                    <button onclick="closeAboutModal()" class="w-8 h-8 rounded-full bg-slate-100 font-bold text-slate-600">✕</button>
+                </div>
+                <p id="t-about-desc" class="text-xs text-slate-600 leading-relaxed">Thipaw Delivery သည် သီပေါမြို့တွင်း နေထိုင်သူများ၊ ဆိုင်ရှင်များနှင့် ဝန်ထမ်းများကို ချိတ်ဆက်ပေးသော Super-App ဖြစ်ပါသည်။</p>
+                <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-2">
+                    <h4 id="t-about-rulestitle" class="text-xs font-extrabold text-slate-900">📋 ဝန်ဆောင်မှု စည်းကမ်းချက်များ</h4>
+                    <ul id="about-rules-list" class="space-y-1.5 list-disc pl-4 text-[11px] text-slate-700 leading-relaxed"></ul>
+                </div>
+                <button onclick="closeAboutModal()" id="t-aboutclose-btn" class="w-full py-3 rounded-xl bg-[#FF5722] text-white font-extrabold text-xs">ပိတ်မည်</button>
+            </div>
+        </div>
+
+        <!-- 8. CHAT MODAL -->
+        <div id="chat-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-xs z-50 hidden items-end sm:items-center justify-center sm:p-4">
+            <div class="bg-[#F8FAFC] w-full max-w-[460px] h-[88vh] sm:h-[640px] rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden fade-in">
+                <div class="bg-gradient-to-r from-[#FF5722] to-[#FF6D00] text-white px-4 py-3.5 flex items-center justify-between shrink-0 shadow-xs">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <button onclick="closeChatModal()" class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-bold shrink-0">←</button>
+                        <div class="min-w-0">
+                            <h3 id="chat-header-title" class="text-sm font-extrabold truncate">💬 Live Order Chat</h3>
+                            <p id="chat-header-subtitle" class="text-[11px] text-orange-100 truncate">Direct message regarding your order</p>
+                        </div>
+                    </div>
+                </div>
+                <div id="chat-order-summary" class="bg-orange-50 border-b border-orange-200/80 px-4 py-2 text-[11px] text-slate-700 flex items-center justify-between shrink-0"></div>
+                <div id="chat-messages-feed" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
+                <div class="bg-white border-t border-slate-100 px-3 pt-2.5 pb-1.5 shrink-0">
+                    <p id="t-quickreplies-lbl" class="text-[10px] font-bold text-slate-400 mb-1.5 px-1">အမြန်စာပို့ရန် (Quick Replies):</p>
+                    <div id="chat-quick-replies" class="flex gap-1.5 overflow-x-auto no-scrollbar pb-1"></div>
+                </div>
+                <form onsubmit="sendChatMessage(event)" class="bg-white border-t border-slate-200 p-3 flex items-center gap-2 shrink-0">
+                    <input type="text" id="chat-text-input" placeholder="Type a message..." class="flex-1 rounded-full bg-slate-100 border border-slate-200 px-4 py-2.5 text-sm text-slate-950 outline-none">
+                    <button type="submit" class="w-10 h-10 rounded-full bg-[#FF5722] text-white flex items-center justify-center shadow-sm shrink-0">
+                        <svg class="w-5 h-5 translate-x-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z"/></svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 9. SECURITY PIN MODALS -->
+        <div id="pin-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-5">
+            <div class="bg-white rounded-3xl max-w-xs w-full p-6 text-center shadow-2xl space-y-4 fade-in">
+                <div class="w-12 h-12 bg-orange-100 text-[#FF5722] rounded-2xl flex items-center justify-center text-xl mx-auto">🔒</div>
+                <div>
+                    <h3 id="t-adminpin-title" class="text-base font-extrabold text-slate-900">Admin ဝင်ရောက်ရန်</h3>
+                    <p id="t-adminpin-sub" class="text-xs text-slate-500 mt-1">PIN နံပါတ် ၄ လုံး ရိုက်ထည့်ပါ</p>
+                </div>
+                <input type="password" id="pin-input" maxlength="4" inputmode="numeric" placeholder="••••" onkeyup="if(event.key === 'Enter') verifyPin()" class="w-full text-center tracking-[0.5em] text-xl font-extrabold rounded-xl border border-slate-300 py-3 text-slate-950 outline-none">
+                <p id="pin-error" class="hidden text-xs font-bold text-red-600">Invalid Admin PIN</p>
+                <div class="grid grid-cols-2 gap-2 pt-1">
+                    <button onclick="closePinModal()" id="t-canceladm-btn" class="py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs">ပိတ်မည်</button>
+                    <button onclick="verifyPin()" id="t-unlockadm-btn" class="py-2.5 rounded-xl bg-[#FF5722] text-white font-bold text-xs">ဝင်မည်</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="rider-pin-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-5">
+            <div class="bg-white rounded-3xl max-w-xs w-full p-6 text-center shadow-2xl space-y-4 fade-in">
+                <div class="w-12 h-12 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center justify-center text-2xl mx-auto">🛵</div>
+                <div>
+                    <h3 id="t-staffpin-title" class="text-base font-extrabold text-slate-900">ဝန်ထမ်း အခွင့်အရေး ဝင်ရန်</h3>
+                    <p id="t-staffpin-sub" class="text-xs text-slate-500 mt-1">Staff PIN နံပါတ် ရိုက်ထည့်ပါ</p>
+                </div>
+                <input type="password" id="rider-pin-input" maxlength="4" inputmode="numeric" placeholder="••••" onkeyup="if(event.key === 'Enter') verifyRiderPin()" class="w-full text-center tracking-[0.5em] text-xl font-extrabold rounded-xl border border-slate-300 py-3 text-slate-950 outline-none">
+                <p id="rider-pin-error" class="hidden text-xs font-bold text-red-600">Invalid Staff PIN</p>
+                <div class="grid grid-cols-2 gap-2 pt-1">
+                    <button onclick="closeRiderPinModal()" id="t-cancelstaff-btn" class="py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs">ပိတ်မည်</button>
+                    <button onclick="verifyRiderPin()" id="t-continuestaff-btn" class="py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-xs">ဆက်သွားမည်</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="shop-pass-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-5">
+            <div class="bg-white rounded-3xl max-w-xs w-full p-6 text-center shadow-2xl space-y-4 fade-in">
+                <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center text-2xl mx-auto">🏪</div>
+                <div>
+                    <h3 id="t-merchpin-title" class="text-base font-extrabold text-slate-900">ဆိုင်ပိုင်ရှင် ဝင်ရန်</h3>
+                    <p id="t-merchpin-sub" class="text-xs text-slate-500 mt-1">ဆိုင်ဖွင့်ခွင့် PIN နံပါတ် ရိုက်ထည့်ပါ</p>
+                </div>
+                <input type="password" id="shop-pass-input" maxlength="4" inputmode="numeric" placeholder="••••" onkeyup="if(event.key === 'Enter') verifyShopPassword()" class="w-full text-center tracking-[0.5em] text-xl font-extrabold rounded-xl border border-slate-300 py-3 text-slate-950 outline-none">
+                <p id="shop-pass-error" class="hidden text-xs font-bold text-red-600">Invalid Merchant PIN</p>
+                <div class="grid grid-cols-2 gap-2 pt-1">
+                    <button onclick="closeShopPassModal()" id="t-cancelmerch-btn" class="py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs">ပိတ်မည်</button>
+                    <button onclick="verifyShopPassword()" id="t-unlockmerch-btn" class="py-2.5 rounded-xl bg-[#FF5722] text-white font-bold text-xs">ဝင်မည်</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast-box" class="fixed bottom-20 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs font-bold px-4 py-3 rounded-xl shadow-xl hidden z-50 text-center max-w-[88%]"></div>
+
+    <script>
+        const ADMIN_SECRET_PIN = "1234";
+        const RIDER_SECRET_PIN = "5555";
+        const SHOP_SECRET_PIN  = "8888";
+
+        const HSIPAW_LAT = 22.6238;
+        const HSIPAW_LNG = 97.3005;
+
+        const DEFAULT_AVATAR = "data:image/svg+xml;utf8," + encodeURIComponent(`
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+                <rect width="100" height="100" fill="#FFEDD5"/>
+                <circle cx="50" cy="38" r="18" fill="#FF5722"/>
+                <path d="M20 88C20 70 33 60 50 60C67 60 80 70 80 88" fill="#FF5722"/>
+            </svg>
+        `);
+
+        const DEFAULT_SHOP_IMG = "data:image/svg+xml;utf8," + encodeURIComponent(`
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+                <rect width="100" height="100" fill="#FFF7ED"/>
+                <rect x="20" y="38" width="60" height="42" rx="6" fill="#FF5722"/>
+                <path d="M16 38L26 22H74L84 38H16Z" fill="#EA580C"/>
+                <rect x="42" y="54" width="16" height="26" fill="#FFEDD5"/>
+            </svg>
+        `);
+
+        const LANG_KEY = 'td_app_lang';
+        const TERMS_KEY = 'td_terms_accepted';
+        const USER_STORAGE_KEY = 'td_user_profile';
+        const ORDERS_STORAGE_KEY = 'td_orders_live';
+        const SHOPS_STORAGE_KEY = 'td_shops_live';
+        const RIDERS_STORAGE_KEY = 'td_riders_registry';
+        const MY_RIDER_SESSION_KEY = 'td_my_rider_session';
+        const CONFIG_STORAGE_KEY = 'td_admin_config';
+
+        const DEFAULT_CONFIG = {
+            orderTown: 2000,
+            orderOuter: 3000,
+            orderExtraStop: 500,
+            bikeTown: 4000,
+            bikeOuter: 5000,
+            bikeBawgyo: 8000,
+            rules: [
+                "Standard order delivery fee applies inside town up to one motorbike load.",
+                "Outer zone areas (San Phet, Tonsint, Zawtsu, Htaung Gyi) carry an adjusted rate.",
+                "Food and market item costs are paid directly according to the store receipt plus delivery fee.",
+                "Orders can only be cancelled before a rider accepts and begins purchasing your items.",
+                "Bike Taxi rates are calculated based on town or distant zones (Bawgyo)."
+            ]
+        };
+
+        let currentLang = localStorage.getItem(LANG_KEY) || 'my';
+        let termsAccepted = localStorage.getItem(TERMS_KEY) === 'true';
+        let userProfile = JSON.parse(localStorage.getItem(USER_STORAGE_KEY)) || null;
+        let appConfig = JSON.parse(localStorage.getItem(CONFIG_STORAGE_KEY)) || DEFAULT_CONFIG;
+        let allShops = JSON.parse(localStorage.getItem(SHOPS_STORAGE_KEY)) || [
+            {
+                id: 'shop_1',
+                name: 'Nantaw Shan Noodle',
+                address: 'Central Ward, Bogyoke Road, Hsipaw',
+                phone: '09428111222',
+                photo: DEFAULT_SHOP_IMG,
+                items: [
+                    { id: 'm1', name: 'Shan Noodle (Sticky)', priceNum: 2500, photo: DEFAULT_SHOP_IMG },
+                    { id: 'm2', name: 'Warm Tofu & Crispy Pork', priceNum: 3000, photo: DEFAULT_SHOP_IMG }
+                ]
+            }
+        ];
+
+        let allOrders = JSON.parse(localStorage.getItem(ORDERS_STORAGE_KEY)) || [];
+        let allRiders = JSON.parse(localStorage.getItem(RIDERS_STORAGE_KEY)) || [];
+        let myRiderSession = JSON.parse(localStorage.getItem(MY_RIDER_SESSION_KEY)) || null;
+
+        let tempAvatarUrl = null;
+        let selfieVerified = false;
+        let foodCart = [];
+        let foodCoords = null;
+        let selectedShopId = null;
+        let customCoords = null;
+
+        let activeBikeField = 'dropoff';
+        let bikePickupCoords = null;
+        let bikeDropoffCoords = null;
+        let mainMapLat = HSIPAW_LAT;
+        let mainMapLng = HSIPAW_LNG;
+        let mainMapType = 'k';
+        let currentPickerTarget = 'dropoff';
+        let tempPickedLat = HSIPAW_LAT;
+        let tempPickedLng = HSIPAW_LNG;
+        let tempPickedLabel = '';
+
+        let tempShopPhoto = DEFAULT_SHOP_IMG;
+        let shopUnlocked = false;
+        let activeChatOrderId = null;
+        let activeChatRole = 'customer';
+        let lastKnownOrderCount = allOrders.length;
+
+        const HSIPAW_PLACES = [
+            { name: "Hsipaw Central Market", sub: "Market Ward, Hsipaw Town Center", lat: 22.6238, lng: 97.3005 },
+            { name: "Hsipaw Haw Palace", sub: "North Ward, Historic Palace Road", lat: 22.6295, lng: 97.2950 },
+            { name: "Dokhtawaddy Bridge Gate", sub: "East River Crossing, Hsipaw", lat: 22.6170, lng: 97.3110 },
+            { name: "Hsipaw Highway Bus Station", sub: "Lashio - Mandalay Main Road", lat: 22.6210, lng: 97.3045 },
+            { name: "Bawgyo Pagoda", sub: "Bawgyo Village, West Hsipaw", lat: 22.6580, lng: 97.2650 }
+        ];
+
+        const I18N = {
+            en: {
+                welcomeSub: "Delivery & Bike Taxi Rates in Hsipaw",
+                ratesHeading: "Delivery & Bike Taxi Rates",
+                rulesHeading: "Terms & Conditions",
+                agreeBtn: "I Agree - Continue to Account Setup",
+                regSub: "Complete your verified profile to start",
+                regPhotoNote: "Take a real live selfie photo for security verification",
+                takeSelfie: "Take Selfie",
+                labelName: "Full Name",
+                labelPhone: "Phone Number",
+                labelAddr: "Home Address / Ward",
+                regSubmit: "Save & Continue",
+                cityBadge: "📍 Hsipaw",
+                riderBtn: "Rider",
+                searchPlaceholder: "Search shops or menus in Hsipaw...",
+                svcFood: "Food",
+                svcFoodSub: "Shop Menus",
+                svcCustom: "Order",
+                svcCustomSub: "Custom Buy",
+                svcBike: "Bike Taxi",
+                svcBikeSub: "Book Ride",
+                svcMap: "Satellite Map",
+                svcMapSub: "Explore Hsipaw",
+                svcShop: "Open Shop",
+                svcShopSub: "Merchant Portal",
+                homeShopsTitle: "🏪 Partner Shops on Thipaw Delivery",
+                viewAllShops: "View All →",
+                homeRateLbl: "Town Delivery",
+                homeCallLbl: "Support Hotline",
+                homeCallBtn: "Call Direct",
+                navHome: "Home",
+                navActivity: "Activity",
+                navMap: "Map",
+                navAccount: "Profile",
+                settingsHeading: "Settings & Permissions",
+                langSettingLbl: "App Language",
+                permTitle: "Device Permissions",
+                grantAllPerm: "Enable All",
+                accEdit: "✏️ Edit Profile & Live Photo",
+                accShop: "🏪 Open / Manage Shop Channel",
+                accRider: "🛵 Rider Dispatch Portal",
+                accAbout: "ℹ️ About App & Terms of Service",
+                accAdmin: "🔒 Admin Control Panel",
+                foodHeader: "🍜 Food & Shop Menus",
+                foodSub: "Select items from one or multiple shops in a single order",
+                custBuyBtn: "+ Custom Buy",
+                shopChannelsLbl: "🏪 Partner Shops",
+                cartTitle: "Your Order Basket",
+                cartEmpty: "Tap \"+ Add\" on any menu item above to build your order",
+                itemsSubtotalLbl: "Items Subtotal:",
+                delivFeeLbl: "Delivery Fee:",
+                grandTotalLbl: "Estimated Total:",
+                delivAddrLbl: "Delivery Address",
+                attachGps: "Attach Current GPS Location",
+                placeFoodBtn: "Place Unified Order",
+                customHeader: "🛍️ Order Anything (Custom Buy)",
+                customSub: "Request items from any store or market in Hsipaw",
+                customShopLbl: "Store / Market Name (Optional)",
+                customItemsLbl: "What would you like us to buy?",
+                customAddrLbl: "Delivery Address",
+                customGpsBtn: "Attach Current GPS Location",
+                customFeeLbl: "Estimated Delivery Fee:",
+                customSubmitBtn: "Submit Custom Order",
+                bikeNow: "Book Bike Taxi Now",
+                suggestedLbl: "Suggested Places",
+                grabCurrLoc: "Current Location",
+                chooseOnMap: "Choose on Map",
+                bikeTierName: "Thipaw Bike Taxi",
+                bookBikeBtn: "Confirm Bike Taxi",
+                shopMgrTitle: "🏪 Shop Channel Manager",
+                shopMgrSub: "Manage your shop storefront & menu items",
+                newShopBtn: "+ New Shop",
+                regNewShopTitle: "🏪 Register New Shop",
+                shopPhotoLbl: "Photo",
+                saveShopBtn: "Save Shop Channel",
+                activityHeader: "📋 Order Activity",
+                activitySub: "Track status, cancel before pickup, or chat with your rider",
+                mapTitle: "🛰️ Satellite Map",
+                mapSub: "Hsipaw Live Satellite View",
+                coordsLbl: "Coordinates:",
+                locMeBtn: "📍 Locate Me",
+                riderHdrTitle: "Rider Dispatch",
+                riderRegTitle: "Rider Registration",
+                riderRegSub: "Enter your name and phone number. Admin must approve your account.",
+                riderNameLbl: "Rider Full Name",
+                riderPhoneLbl: "Phone Number",
+                reqApprBtn: "Request Admin Approval",
+                waitApprTitle: "Waiting for Admin Approval",
+                waitApprSub: "Your rider request has been sent to the Admin. Once approved, your order board will unlock automatically.",
+                refreshStatusBtn: "Refresh Status",
+                availPoolLbl: "Available Orders Pool",
+                adminHdrTitle: "Admin Control Panel",
+                adminHdrSub: "Live Dispatch, Staff Approvals & Pricing",
+                riderSecTitle: "Rider Access Security",
+                riderSecSub: "Approve or reject rider staff applications here.",
+                editRatesTitle: "💵 Edit Delivery & Bike Taxi Rates (Ks)",
+                editRatesSub: "Separate rates for orders and bike taxi.",
+                saveRatesBtn: "Save New Rates",
+                editTermsTitle: "📋 Edit Terms & Conditions",
+                editTermsSub: "Each line below appears as a rule on the Terms & About screens.",
+                saveTermsBtn: "Update Terms & Rules",
+                mapPickerSub: "Select a landmark or use live GPS in Hsipaw",
+                quickMarkLbl: "Quick Hsipaw Landmarks:",
+                useGpsBtn: "🎯 Use Live GPS",
+                cancelMapBtn: "Cancel",
+                confMapBtn: "Confirm Location",
+                aboutTitle: "About Thipaw Delivery",
+                aboutDesc: "Thipaw Delivery connects residents, restaurants, and verified riders across Hsipaw Township.",
+                aboutRulesTitle: "📋 Service Terms & Rules",
+                aboutCloseBtn: "Close",
+                quickRepliesLbl: "Quick Replies:",
+                adminPinTitle: "Admin Access",
+                adminPinSub: "Enter your 4-digit security PIN",
+                cancelAdmBtn: "Cancel",
+                unlockAdmBtn: "Unlock",
+                staffPinTitle: "Rider Staff Access",
+                staffPinSub: "Enter Staff PIN once to register or access dispatch",
+                cancelStaffBtn: "Cancel",
+                continueStaffBtn: "Continue",
+                merchPinTitle: "Merchant Portal",
+                merchPinSub: "Enter your Shop Access PIN",
+                cancelMerchBtn: "Cancel",
+                unlockMerchBtn: "Unlock"
+            },
+            my: {
+                welcomeSub: "သီပေါမြို့တွင်း ပို့ဆောင်ခနှင့် ဆိုင်ကယ်ကယ်ရီ နှုန်းထားများ",
+                ratesHeading: "ပို့ဆောင်ခနှင့် ဆိုင်ကယ်ကယ်ရီ နှုန်းထားများ",
+                rulesHeading: "ဝန်ဆောင်မှု စည်းကမ်းချက်များ",
+                agreeBtn: "သဘောတူပါတယ် - အကောင့်ဖွင့်မည်",
+                regSub: "အသုံးပြုသူ အကောင့်အချက်အလက် ဖြည့်သွင်းပါ",
+                regPhotoNote: "လုံခြုံရေးအတွက် ကင်မရာဖြင့် လူကိုယ်တိုင်ပုံအစစ် ရိုက်ထည့်ပါ",
+                takeSelfie: "ပုံရိုက်မည်",
+                labelName: "နာမည်အပြည့်အစုံ",
+                labelPhone: "ဖုန်းနံပါတ်",
+                labelAddr: "နေရပ်လိပ်စာ / ရပ်ကွက်",
+                regSubmit: "အကောင့်ဖောက်ပြီး အသုံးပြုမည်",
+                cityBadge: "📍 သီပေါမြို့",
+                riderBtn: "ဝန်ထမ်း",
+                searchPlaceholder: "ဆိုင်နှင့် အစားအသောက် ရှာဖွေမည်...",
+                svcFood: "Food",
+                svcFoodSub: "ဆိုင်မီနူးများ",
+                svcCustom: "မှာမည်",
+                svcCustomSub: "တခြားဝယ်ခိုင်းရန်",
+                svcBike: "Bike Taxi",
+                svcBikeSub: "ဆိုင်ကယ်ကယ်ရီ",
+                svcMap: "Satellite Map",
+                svcMapSub: "ဂြိုဟ်တုမြေပုံ",
+                svcShop: "ဆိုင်ဖွင့်မည်",
+                svcShopSub: "ဆိုင်ရှင်များ",
+                homeShopsTitle: "🏪 Thipaw Delivery ရှိ ဆိုင်များ",
+                viewAllShops: "အားလုံးကြည့်မည် →",
+                homeRateLbl: "မြို့တွင်း ပို့ဆောင်ခ",
+                homeCallLbl: "ဖုန်းဖြင့်မှာရန်",
+                homeCallBtn: "တိုက်ရိုက်ခေါ်မည်",
+                navHome: "Home",
+                navActivity: "Activity",
+                navMap: "Map",
+                navAccount: "Profile",
+                settingsHeading: "Settings နှင့် Permissions",
+                langSettingLbl: "ဘာသာစကား (Language)",
+                permTitle: "App Permissions များ",
+                grantAllPerm: "အားလုံးဖွင့်မည်",
+                accEdit: "✏️ ပရိုဖိုင်နှင့် ဓာတ်ပုံ ပြင်ဆင်မည်",
+                accShop: "🏪 ဆိုင် Channel ဖွင့်ရန် / စီမံရန်",
+                accRider: "🛵 ဝန်ထမ်း အော်ဒါကောက်ရန် နေရာ",
+                accAbout: "ℹ️ App အကြောင်းနှင့် စည်းမျဉ်းစည်းကမ်းများ",
+                accAdmin: "🔒 Admin စီမံခန့်ခွဲမှု နေရာ",
+                foodHeader: "🍜 Food & ဆိုင်မီနူးများ",
+                foodSub: "ဆိုင်တစ်ဆိုင် သို့မဟုတ် ဆိုင်များစွာမှ အစားအသောက်များကို အော်ဒါတစ်ခုတည်းဖြင့် ပေါင်းစပ်မှာယူနိုင်ပါသည်",
+                custBuyBtn: "+ တခြားမှာမည်",
+                shopChannelsLbl: "🏪 ဆိုင်ရွေးချယ်ရန်",
+                cartTitle: "သင့်မှာယူမှု ရွေးချယ်ချက်များ (Cart)",
+                cartEmpty: "အထက်ပါ ဆိုင်မီနူးများမှ '+ Add' ကို နှိပ်၍ ပစ္စည်းများ ထည့်ပါ",
+                itemsSubtotalLbl: "ပစ္စည်းတန်ဖိုး စုစုပေါင်း:",
+                delivFeeLbl: "ပို့ဆောင်ခ:",
+                grandTotalLbl: "ခန့်မှန်းကျသင့်ငွေ စုစုပေါင်း:",
+                delivAddrLbl: "ပို့ဆောင်ရမည့် လိပ်စာ",
+                attachGps: "လက်ရှိ GPS တည်နေရာ ထည့်မည်",
+                placeFoodBtn: "အော်ဒါတင်မည်",
+                customHeader: "🛍️ ပစ္စည်းအမျိုးမျိုး မှာယူရန် (Custom Buy)",
+                customSub: "သီပေါမြို့တွင်း မည်သည့်ဆိုင် သို့မဟုတ် ဈေးမှမဆို ဝယ်ခိုင်းနိုင်ပါသည်",
+                customShopLbl: "ဆိုင် / ဈေးနာမည် (မထည့်လည်းရသည်)",
+                customItemsLbl: "ဘာတွေဝယ်ခိုင်းချင်ပါသလဲ?",
+                customAddrLbl: "ပို့ဆောင်ရမည့် လိပ်စာ",
+                customGpsBtn: "လက်ရှိ GPS တည်နေရာ ထည့်မည်",
+                customFeeLbl: "ခန့်မှန်းပို့ဆောင်ခ:",
+                customSubmitBtn: "အော်ဒါတင်မည်",
+                bikeNow: "ဆိုင်ကယ်ကယ်ရီ အမြန်ခေါ်မည်",
+                suggestedLbl: "အကြံပြုထားသော နေရာများ",
+                grabCurrLoc: "လက်ရှိတည်နေရာ (Current Location)",
+                chooseOnMap: "မြေပုံပေါ်တွင် Pin ထောက်မည်",
+                bikeTierName: "Thipaw Bike Taxi",
+                bookBikeBtn: "ဆိုင်ကယ်ကယ်ရီ အတည်ပြုမည်",
+                shopMgrTitle: "🏪 ဆိုင် Channel စီမံရန်",
+                shopMgrSub: "သင့်ဆိုင်နှင့် မီနူးဈေးနှုန်းများကို ကိုယ်တိုင်တင်ပါ",
+                newShopBtn: "+ ဆိုင်အသစ်",
+                regNewShopTitle: "🏪 ဆိုင်အသစ် ဖွင့်လှစ်ရန်",
+                shopPhotoLbl: "ဆိုင်ပုံ",
+                saveShopBtn: "ဆိုင် Channel သိမ်းဆည်းမည်",
+                activityHeader: "📋 မှာယူမှု မှတ်တမ်း (Activity)",
+                activitySub: "အခြေအနေ ကြည့်ရှုနိုင်ပြီး ပို့ဆောင်သူနှင့် စာတိုပေးပို့နိုင်ပါသည်",
+                mapTitle: "🛰️ Satellite Map",
+                mapSub: "သီပေါမြို့ ဂြိုဟ်တုမြေပုံ မြင်ကွင်း",
+                coordsLbl: "တည်နေရာ (Coordinates):",
+                locMeBtn: "📍 ကျွန်ုပ်နေရာ ရှာမည်",
+                riderHdrTitle: "Rider အော်ဒါကောက်ရန် နေရာ",
+                riderRegTitle: "ဝန်ထမ်း (Rider) အဖြစ် စာရင်းပေးသွင်းရန်",
+                riderRegSub: "သင့်နာမည်နှင့် ဖုန်းနံပါတ် ထည့်ပါ။ Admin မှ အတည်ပြုပေးရပါမည်။",
+                riderNameLbl: "ဝန်ထမ်း နာမည်အပြည့်အစုံ",
+                riderPhoneLbl: "ဖုန်းနံပါတ်",
+                reqApprBtn: "Admin အတည်ပြုချက် တောင်းခံမည်",
+                waitApprTitle: "Admin ၏ အတည်ပြုချက်ကို စောင့်ဆိုင်းနေပါသည်",
+                waitApprSub: "သင့်တောင်းဆိုချက်ကို Admin ထံ ပို့ပြီးပါပြီ။ အတည်ပြုပြီးပါက အော်ဒါဘုတ် ပွင့်လာပါမည်။",
+                refreshStatusBtn: "အခြေအနေ စစ်ဆေးမည်",
+                availPoolLbl: "ရယူနိုင်သော အော်ဒါများ",
+                adminHdrTitle: "Admin စီမံခန့်ခွဲမှု နေရာ",
+                adminHdrSub: "အော်ဒါများ၊ ဝန်ထမ်းအတည်ပြုချက်များနှင့် ပို့ဆောင်ခနှုန်းထားများ",
+                riderSecTitle: "ဝန်ထမ်း လုံခြုံရေး စနစ်",
+                riderSecSub: "ဤနေရာတွင် ဝန်ထမ်းအသစ်များကို အတည်ပြုခြင်း သို့မဟုတ် ငြင်းပယ်ခြင်း (ဖျက်ခြင်း) ပြုလုပ်နိုင်ပါသည်။",
+                editRatesTitle: "💵 ပို့ဆောင်ခနှင့် ကယ်ရီခနှုန်းထားများ ပြင်ဆင်ရန် (ကျပ်)",
+                editRatesSub: "Order နှင့် Bike Taxi နှုန်းထားများကို သီးသန့်စီ သတ်မှတ်နိုင်ပါသည်။",
+                saveRatesBtn: "နှုန်းထားအသစ် သိမ်းဆည်းမည်",
+                editTermsTitle: "📋 စည်းမျဉ်းစည်းကမ်းများ ပြင်ဆင်ရန်",
+                editTermsSub: "စာကြောင်းတစ်ကြောင်းချင်းစီသည် Terms နှင့် About စာမျက်နှာများတွင် ပေါ်လာပါမည်။",
+                saveTermsBtn: "စည်းကမ်းချက်များ အသစ်ပြင်ဆင်မည်",
+                mapPickerSub: "သီပေါမြို့ ဂြိုဟ်တုမြေပုံတွင် Pin တိုက်ရိုက်ထောက်၍ ရွေးချယ်ပါ",
+                quickMarkLbl: "အမြန်ရွေးချယ်ရန် အထင်ကရနေရာများ:",
+                useGpsBtn: "🎯 လက်ရှိ GPS ယူမည်",
+                cancelMapBtn: "မရွေးတော့ပါ",
+                confMapBtn: "ဤနေရာကို အတည်ပြုမည်",
+                aboutTitle: "Thipaw Delivery အကြောင်း",
+                aboutDesc: "Thipaw Delivery သည် သီပေါမြို့တွင်း နေထိုင်သူများ၊ ဆိုင်ရှင်များနှင့် ဝန်ထမ်းများကို ချိတ်ဆက်ပေးသော Super-App ဖြစ်ပါသည်။",
+                aboutRulesTitle: "📋 ဝန်ဆောင်မှု စည်းကမ်းချက်များ",
+                aboutCloseBtn: "ပိတ်မည်",
+                quickRepliesLbl: "အမြန်စာပို့ရန် (Quick Replies):",
+                adminPinTitle: "Admin ဝင်ရောက်ရန်",
+                adminPinSub: "PIN နံပါတ် ၄ လုံး ရိုက်ထည့်ပါ",
+                cancelAdmBtn: "ပိတ်မည်",
+                unlockadmBtn: "ဝင်မည်",
+                staffPinTitle: "ဝန်ထမ်း အခွင့်အရေး ဝင်ရန်",
+                staffPinSub: "Staff PIN နံပါတ် ရိုက်ထည့်ပါ",
+                cancelStaffBtn: "ပိတ်မည်",
+                continueStaffBtn: "ဆက်သွားမည်",
+                merchPinTitle: "ဆိုင်ပိုင်ရှင် ဝင်ရန်",
+                merchPinSub: "ဆိုင်ဖွင့်ခွင့် PIN နံပါတ် ရိုက်ထည့်ပါ",
+                cancelMerchBtn: "ပိတ်မည်",
+                unlockMerchBtn: "ဝင်မည်"
+            }
+        };
+
+        function setAppLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem(LANG_KEY, lang);
+            applyLanguageStrings();
+        }
+
+        function applyLanguageStrings() {
+            const t = I18N[currentLang] || I18N.my;
+            const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+
+            setTxt('t-welcome-sub', t.welcomeSub);
+            setTxt('t-rates-heading', `💵 ${t.ratesHeading}`);
+            setTxt('t-rules-heading', `📋 ${t.rulesHeading}`);
+            setTxt('t-agree-btn', t.agreeBtn);
+            setTxt('t-reg-sub', t.regSub);
+            setTxt('t-reg-photo-note', t.regPhotoNote);
+            setTxt('t-take-selfie', t.takeSelfie);
+            setTxt('t-label-name', t.labelName);
+            setTxt('t-label-phone', t.labelPhone);
+            setTxt('t-label-address', t.labelAddr);
+            setTxt('t-reg-submit', t.regSubmit);
+            setTxt('t-city-badge', t.cityBadge);
+            setTxt('t-rider-btn', t.riderBtn);
+            setTxt('t-search-placeholder', t.searchPlaceholder);
+            setTxt('t-svc-food', t.svcFood);
+            setTxt('t-svc-food-sub', t.svcFoodSub);
+            setTxt('t-svc-custom', t.svcCustom);
+            setTxt('t-svc-custom-sub', t.svcCustomSub);
+            setTxt('t-svc-bike', t.svcBike);
+            setTxt('t-svc-bike-sub', t.svcBikeSub);
+            setTxt('t-svc-map', t.svcMap);
+            setTxt('t-svc-map-sub', t.svcMapSub);
+            setTxt('t-svc-shop', t.svcShop);
+            setTxt('t-svc-shop-sub', t.svcShopSub);
+            setTxt('t-home-shops-title', t.homeShopsTitle);
+            setTxt('t-view-all-shops', t.viewAllShops);
+            setTxt('t-home-rate-lbl', t.homeRateLbl);
+            setTxt('t-home-call-lbl', t.homeCallLbl);
+            setTxt('t-home-call-btn', t.homeCallBtn);
+            setTxt('t-nav-home', t.navHome);
+            setTxt('t-nav-activity', t.navActivity);
+            setTxt('t-nav-map', t.navMap);
+            setTxt('t-nav-account', t.navAccount);
+            setTxt('t-settings-heading', t.settingsHeading);
+            setTxt('t-lang-setting-lbl', t.langSettingLbl);
+            setTxt('t-perm-title', t.permTitle);
+            setTxt('t-grant-all-perm', t.grantAllPerm);
+            setTxt('t-acc-edit', t.accEdit);
+            setTxt('t-acc-shop', t.accShop);
+            setTxt('t-acc-rider', t.accRider);
+            setTxt('t-acc-about', t.accAbout);
+            setTxt('t-acc-admin', t.accAdmin);
+
+            setTxt('t-food-header', t.foodHeader);
+            setTxt('t-food-sub', t.foodSub);
+            setTxt('t-cust-buy-btn', t.custBuyBtn);
+            setTxt('t-shop-channels-lbl', t.shopChannelsLbl);
+            setTxt('t-cart-title', `🛒 ${t.cartTitle}`);
+            setTxt('t-cart-empty', t.cartEmpty);
+            setTxt('t-items-subtotal-lbl', t.itemsSubtotalLbl);
+            setTxt('t-deliv-fee-lbl', t.delivFeeLbl);
+            setTxt('t-grand-total-lbl', t.grandTotalLbl);
+            setTxt('t-deliv-addr-lbl', t.delivAddrLbl);
+            setTxt('t-attach-gps', t.attachGps);
+            setTxt('t-place-food-btn', t.placeFoodBtn);
+
+            setTxt('t-custom-header', t.customHeader);
+            setTxt('t-custom-sub', t.customSub);
+            setTxt('t-custom-shop-lbl', t.customShopLbl);
+            setTxt('t-custom-items-lbl', t.customItemsLbl);
+            setTxt('t-custom-addr-lbl', t.customAddrLbl);
+            setTxt('t-custom-gps-btn', t.customGpsBtn);
+            setTxt('t-custom-fee-lbl', t.customFeeLbl);
+            setTxt('t-custom-submit-btn', t.customSubmitBtn);
+
+            setTxt('t-bike-now', t.bikeNow);
+            setTxt('t-suggested-lbl', t.suggestedLbl);
+            setTxt('t-grab-curr-loc', t.grabCurrLoc);
+            setTxt('t-choose-on-map', t.chooseOnMap);
+            setTxt('t-choose-on-map-2', t.chooseOnMap);
+            setTxt('t-bike-tier-name', t.bikeTierName);
+            setTxt('t-book-bike-btn', t.bookBikeBtn);
+
+            setTxt('t-shopmgr-title', t.shopMgrTitle);
+            setTxt('t-shopmgr-sub', t.shopMgrSub);
+            setTxt('t-newshop-btn', t.newShopBtn);
+            setTxt('t-regnewshop-title', t.regNewShopTitle);
+            setTxt('t-shopphoto-lbl', t.shopPhotoLbl);
+            setTxt('t-saveshop-btn', t.saveShopBtn);
+
+            setTxt('t-activity-header', t.activityHeader);
+            setTxt('t-activity-sub', t.activitySub);
+            setTxt('t-map-title', t.mapTitle);
+            setTxt('t-map-sub', t.mapSub);
+            setTxt('t-coords-lbl', t.coordsLbl);
+            setTxt('t-locme-btn', t.locMeBtn);
+
+            setTxt('t-riderhdr-title', t.riderHdrTitle);
+            setTxt('t-exit-btn', t.exitBtn || "Exit");
+            setTxt('t-riderreg-title', t.riderRegTitle);
+            setTxt('t-riderreg-sub', t.riderRegSub);
+            setTxt('t-ridername-lbl', t.riderNameLbl);
+            setTxt('t-riderphone-lbl', t.riderPhoneLbl);
+            setTxt('t-reqappr-btn', t.reqApprBtn);
+            setTxt('t-waitappr-title', t.waitApprTitle);
+            setTxt('t-waitappr-sub', t.waitApprSub);
+            setTxt('t-refreshstatus-btn', t.refreshStatusBtn);
+            setTxt('t-availpool-lbl', t.availPoolLbl);
+
+            setTxt('t-adminhdr-title', t.adminHdrTitle);
+            setTxt('t-adminhdr-sub', t.adminHdrSub);
+            setTxt('t-adminexit-btn', t.exitBtn || "Exit");
+            setTxt('t-ridersec-title', t.riderSecTitle);
+            setTxt('t-ridersec-sub', t.riderSecSub);
+            setTxt('t-editrates-title', t.editRatesTitle);
+            setTxt('t-editrates-sub', t.editRatesSub);
+            setTxt('t-saverates-btn', t.saveRatesBtn);
+            setTxt('t-editterms-title', t.editTermsTitle);
+            setTxt('t-editterms-sub', t.editTermsSub);
+            setTxt('t-saveterms-btn', t.saveTermsBtn);
+
+            setTxt('gmap-picker-title', `🛰️ မြေပုံတွင် Pin ထောက်ရန် (Grab Pin)`);
+            setTxt('t-mappicker-sub', t.mapPickerSub);
+            setTxt('t-quickmark-lbl', t.quickMarkLbl);
+            setTxt('t-usegps-btn', t.useGpsBtn);
+            setTxt('t-cancelmap-btn', t.cancelMapBtn);
+            setTxt('t-confmap-btn', t.confMapBtn);
+
+            setTxt('t-about-title', t.aboutTitle);
+            setTxt('t-about-desc', t.aboutDesc);
+            setTxt('t-about-rulestitle', t.aboutRulesTitle);
+            setTxt('t-aboutclose-btn', t.aboutCloseBtn);
+            setTxt('t-quickreplies-lbl', t.quickRepliesLbl);
+
+            setTxt('t-adminpin-title', t.adminPinTitle);
+            setTxt('t-adminpin-sub', t.adminPinSub);
+            setTxt('t-canceladm-btn', t.cancelAdmBtn);
+            setTxt('t-unlockadm-btn', t.unlockadmBtn);
+
+            setTxt('t-staffpin-title', t.staffPinTitle);
+            setTxt('t-staffpin-sub', t.staffPinSub);
+            setTxt('t-cancelstaff-btn', t.cancelStaffBtn);
+            setTxt('t-continuestaff-btn', t.continueStaffBtn);
+
+            setTxt('t-merchpin-title', t.merchPinTitle);
+            setTxt('t-merchpin-sub', t.merchPinSub);
+            setTxt('t-cancelmerch-btn', t.cancelMerchBtn);
+            setTxt('t-unlockmerch-btn', t.unlockMerchBtn);
+
+            const activeCls = "px-2.5 py-1 rounded-full bg-white text-[#FF5722]";
+            const inactiveCls = "px-2.5 py-1 rounded-full text-white";
+            document.getElementById('welcome-lang-en').className = currentLang === 'en' ? activeCls : inactiveCls;
+            document.getElementById('welcome-lang-my').className = currentLang === 'my' ? activeCls : inactiveCls;
+
+            const setAct = "px-3 py-1 rounded-lg bg-[#FF5722] text-white";
+            const setInact = "px-3 py-1 rounded-lg text-slate-600";
+            document.getElementById('set-lang-en').className = currentLang === 'en' ? setAct : setInact;
+            document.getElementById('set-lang-my').className = currentLang === 'my' ? setAct : setInact;
+
+            renderDynamicRatesAndRules();
+        }
+
+        function playNewOrderChime() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const playTone = (freq, start, dur) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, ctx.currentTime + start);
+                    gain.gain.setValueAtTime(0.25, ctx.currentTime + start);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(ctx.currentTime + start);
+                    osc.stop(ctx.currentTime + start + dur);
+                };
+                playTone(587.33, 0, 0.25);
+                playTone(880.00, 0.18, 0.45);
+            } catch (e) {}
+        }
+
+        function triggerOrderNotification(order) {
+            playNewOrderChime();
+            if ("Notification" in window && Notification.permission === "granted") {
+                new Notification("New Thipaw Delivery Order!", {
+                    body: `${order.customerName} • ${order.details}`,
+                    icon: "https://i.ibb.co/B5NfCWH9/1794811370987.jpg"
+                });
+            }
+        }
+
+        function requestLocationPermission() {
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    () => {
+                        document.getElementById('perm-loc-status').textContent = "✅ Allowed";
+                        document.getElementById('perm-loc-status').className = "text-[10px] font-bold text-emerald-600";
+                        showToast(currentLang === 'my' ? "Location ခွင့်ပြုပြီးပါပြီ" : "Location enabled");
+                    },
+                    () => {
+                        showToast(currentLang === 'my' ? "ကျေးဇူးပြု၍ Location ဖွင့်ပေးပါ" : "Please allow Location");
+                    }
+                );
+            }
+        }
+
+        async function requestCameraPermission() {
+            try {
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                    stream.getTracks().forEach(track => track.stop());
+                    document.getElementById('perm-cam-status').textContent = "✅ Allowed";
+                    document.getElementById('perm-cam-status').className = "text-[10px] font-bold text-emerald-600";
+                    showToast(currentLang === 'my' ? "Camera ခွင့်ပြုပြီးပါပြီ" : "Camera enabled");
+                }
+            } catch (err) {}
+        }
+
+        function requestNotificationPermission() {
+            playNewOrderChime();
+            if ("Notification" in window) {
+                Notification.requestPermission().then(res => {
+                    if (res === "granted") {
+                        document.getElementById('perm-noti-status').textContent = "✅ Allowed";
+                        document.getElementById('perm-noti-status').className = "text-[10px] font-bold text-emerald-600";
+                    }
+                });
+            }
+        }
+
+        function requestAllAppPermissions() {
+            requestLocationPermission();
+            requestCameraPermission();
+            requestNotificationPermission();
+        }
+
+        function saveShops() { localStorage.setItem(SHOPS_STORAGE_KEY, JSON.stringify(allShops)); }
+        function saveConfig() { localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(appConfig)); }
+        function saveRiders() { localStorage.setItem(RIDERS_STORAGE_KEY, JSON.stringify(allRiders)); }
+
+        function saveOrders() {
+            localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(allOrders));
+            if (allOrders.length > lastKnownOrderCount) {
+                triggerOrderNotification(allOrders[0]);
+            }
+            lastKnownOrderCount = allOrders.length;
+        }
+
+        window.addEventListener('storage', (e) => {
+            if (e.key === ORDERS_STORAGE_KEY) {
+                const updated = JSON.parse(localStorage.getItem(ORDERS_STORAGE_KEY)) || [];
+                if (updated.length > allOrders.length) triggerOrderNotification(updated[0]);
+                allOrders = updated;
+                lastKnownOrderCount = allOrders.length;
+                refreshVisibleScreens();
+            }
+        });
+
+        function refreshVisibleScreens() {
+            renderHomeActiveOrder();
+            updateUnreadIndicators();
+            if (!document.getElementById('view-activity').classList.contains('hidden')) renderUserActivity();
+            if (!document.getElementById('admin-screen').classList.contains('hidden')) renderAdminOrders();
+            if (!document.getElementById('rider-screen').classList.contains('hidden')) renderRiderPortalState();
+        }
+
+        window.onload = function() {
+            applyLanguageStrings();
+            renderGrabSuggestedPlaces();
+            if (!termsAccepted) {
+                showTermsScreen();
+            } else if (!userProfile) {
+                showRegistration();
+            } else {
+                enterMainApp();
+            }
+        };
+
+        function showToast(msg) {
+            const box = document.getElementById('toast-box');
+            box.textContent = msg;
+            box.classList.remove('hidden');
+            setTimeout(() => box.classList.add('hidden'), 2800);
+        }
+
+        function renderDynamicRatesAndRules() {
+            const ratesList = document.getElementById('dynamic-rates-list');
+            if (ratesList) {
+                ratesList.innerHTML = `
+                    <div class="flex items-center justify-between bg-white p-2.5 rounded-xl border border-orange-100">
+                        <div><p class="font-bold text-slate-800">${currentLang === 'my' ? '🛒 မြို့တွင်း Order ပို့ဆောင်ခ' : 'Order Town Base'}</p><p class="text-[11px] text-slate-500">ဈေးပိုင်း၊ မြို့လယ်</p></div>
+                        <span class="font-extrabold text-[#FF5722] text-sm">${Number(appConfig.orderTown).toLocaleString()} Ks</span>
+                    </div>
+                    <div class="flex items-center justify-between bg-white p-2.5 rounded-xl border border-orange-100">
+                        <div><p class="font-bold text-slate-800">${currentLang === 'my' ? '🛵 မြို့တွင်း Bike Taxi' : 'Bike Taxi Town Base'}</p><p class="text-[11px] text-slate-500">မြို့တွင်းသွားလာရန်</p></div>
+                        <span class="font-extrabold text-[#FF5722] text-sm">${Number(appConfig.bikeTown).toLocaleString()} Ks</span>
+                    </div>
+                    <div class="flex items-center justify-between bg-white p-2.5 rounded-xl border border-orange-100">
+                        <div><p class="font-bold text-slate-800">${currentLang === 'my' ? '🌄 ဘော်ကြိုဘက် Bike Taxi' : 'Bawgyo Bike Taxi'}</p><p class="text-[11px] text-slate-500">ဘော်ကြိုဘုရား၊ တုံစင့်</p></div>
+                        <span class="font-extrabold text-[#FF5722] text-sm">${Number(appConfig.bikeBawgyo).toLocaleString()} Ks</span>
+                    </div>
+                `;
+            }
+
+            const startingBadge = document.getElementById('home-starting-rate');
+            if (startingBadge) startingBadge.textContent = `${currentLang === 'my' ? 'မြို့တွင်း' : 'From'} ${Number(appConfig.orderTown).toLocaleString()} Ks`;
+
+            const rulesHtml = (appConfig.rules || []).map(r => `<li>${escapeHtml(r)}</li>`).join('');
+            const dRules = document.getElementById('dynamic-rules-list');
+            const aRules = document.getElementById('about-rules-list');
+            if (dRules) dRules.innerHTML = rulesHtml;
+            if (aRules) aRules.innerHTML = rulesHtml;
+        }
+
+        function showTermsScreen() {
+            renderDynamicRatesAndRules();
+            document.getElementById('terms-screen').classList.remove('hidden');
+            document.getElementById('register-screen').classList.add('hidden');
+            document.getElementById('main-app-shell').classList.add('hidden');
+            document.getElementById('admin-screen').classList.add('hidden');
+            document.getElementById('rider-screen').classList.add('hidden');
+        }
+
+        function acceptTermsAndProceed() {
+            termsAccepted = true;
+            localStorage.setItem(TERMS_KEY, 'true');
+            requestLocationPermission();
+            if (userProfile) enterMainApp();
+            else showRegistration();
+        }
+
+        function openAboutModal() {
+            renderDynamicRatesAndRules();
+            const m = document.getElementById('about-modal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+        }
+        function closeAboutModal() {
+            document.getElementById('about-modal').classList.add('hidden');
+            document.getElementById('about-modal').classList.remove('flex');
+        }
+
+        function triggerLiveSelfieCapture() {
+            document.getElementById('reg-photo').click();
+        }
+
+        function processVerifiedSelfie(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const maxDim = 320;
+                    let w = img.width, h = img.height;
+                    if (w > h) { if (w > maxDim) { h *= maxDim / w; w = maxDim; } }
+                    else { if (h > maxDim) { w *= maxDim / h; h = maxDim; } }
+                    canvas.width = w; canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+                    tempAvatarUrl = canvas.toDataURL('image/jpeg', 0.82);
+                    selfieVerified = true;
+                    document.getElementById('avatar-preview-box').innerHTML = `<img src="${tempAvatarUrl}" class="w-full h-full object-cover">`;
+                    document.getElementById('selfie-verified-tag').classList.remove('hidden');
+                    showToast(currentLang === 'my' ? "ကင်မရာပုံ အတည်ပြုပြီးပါပြီ" : "Selfie verified!");
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById('reg-name').value.trim();
+            const phone = document.getElementById('reg-phone').value.trim();
+            const address = document.getElementById('reg-address').value.trim();
+
+            if (!tempAvatarUrl || !selfieVerified) {
+                showToast(currentLang === 'my' ? "ကျေးဇူးပြု၍ ကင်မရာဖြင့် ဓာတ်ပုံအရင်ရိုက်ပါ" : "Please take live selfie");
+                triggerLiveSelfieCapture();
+                return;
+            }
+            if (!name || !phone || !address) return;
+
+            userProfile = { name, phone, address, photo: tempAvatarUrl };
+            localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userProfile));
+            enterMainApp();
+            showToast(currentLang === 'my' ? "အကောင့်ဖွင့်ခြင်း အောင်မြင်ပါသည်" : "Account created!");
+        }
+
+        function showRegistration() {
+            document.getElementById('terms-screen').classList.add('hidden');
+            document.getElementById('register-screen').classList.remove('hidden');
+            document.getElementById('main-app-shell').classList.add('hidden');
+            document.getElementById('admin-screen').classList.add('hidden');
+            document.getElementById('rider-screen').classList.add('hidden');
+        }
+
+        function openEditProfile() {
+            if (!userProfile) return;
+            document.getElementById('reg-name').value = userProfile.name;
+            document.getElementById('reg-phone').value = userProfile.phone;
+            document.getElementById('reg-address').value = userProfile.address || "";
+            if (userProfile.photo) {
+                tempAvatarUrl = userProfile.photo;
+                selfieVerified = true;
+                document.getElementById('avatar-preview-box').innerHTML = `<img src="${tempAvatarUrl}" class="w-full h-full object-cover">`;
+                document.getElementById('selfie-verified-tag').classList.remove('hidden');
+            }
+            showRegistration();
+        }
+
+        function enterMainApp() {
+            document.getElementById('terms-screen').classList.add('hidden');
+            document.getElementById('register-screen').classList.add('hidden');
+            document.getElementById('admin-screen').classList.add('hidden');
+            document.getElementById('rider-screen').classList.add('hidden');
+            document.getElementById('main-app-shell').classList.remove('hidden');
+
+            const avatar = userProfile.photo || DEFAULT_AVATAR;
+            document.getElementById('account-avatar').src = avatar;
+            document.getElementById('account-name').textContent = userProfile.name;
+            document.getElementById('account-phone').textContent = userProfile.phone;
+            document.getElementById('account-address').textContent = `📍 ${userProfile.address || 'Hsipaw'}`;
+
+            if (userProfile.address) {
+                const fAddr = document.getElementById('food-address');
+                const cAddr = document.getElementById('custom-address');
+                if (fAddr && !fAddr.value) fAddr.value = userProfile.address;
+                if (cAddr && !cAddr.value) cAddr.value = userProfile.address;
+            }
+
+            renderHomeShopsStrip();
+            renderHomeActiveOrder();
+            updateUnreadIndicators();
+            switchBottomTab('home');
+        }
+
+        function hideAllViews() {
+            ['view-home', 'view-food', 'view-custom', 'view-bike', 'view-shop-manager', 'view-activity', 'view-map', 'view-account'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+        }
+
+        function switchBottomTab(tab) {
+            hideAllViews();
+            document.getElementById('main-scroll-area').scrollTop = 0;
+
+            ['nav-home', 'nav-activity', 'nav-map', 'nav-account'].forEach(id => {
+                const el = document.getElementById(id);
+                el.classList.remove('text-[#FF5722]', 'font-bold');
+                el.classList.add('text-slate-400', 'font-semibold');
+            });
+
+            if (tab === 'home') {
+                document.getElementById('view-home').classList.remove('hidden');
+                highlightNav('nav-home');
+                renderHomeShopsStrip();
+                renderHomeActiveOrder();
+            } else if (tab === 'activity') {
+                document.getElementById('view-activity').classList.remove('hidden');
+                highlightNav('nav-activity');
+                renderUserActivity();
+            } else if (tab === 'map') {
+                document.getElementById('view-map').classList.remove('hidden');
+                highlightNav('nav-map');
+                refreshMainGoogleMapIframe();
+            } else if (tab === 'account') {
+                document.getElementById('view-account').classList.remove('hidden');
+                highlightNav('nav-account');
+            }
+        }
+
+        function highlightNav(id) {
+            const el = document.getElementById(id);
+            el.classList.remove('text-slate-400', 'font-semibold');
+            el.classList.add('text-[#FF5722]', 'font-bold');
+        }
+
+        function openService(service) {
+            hideAllViews();
+            document.getElementById('main-scroll-area').scrollTop = 0;
+            document.getElementById(`view-${service}`).classList.remove('hidden');
+            if (service === 'food') {
+                renderFoodShopBrowser();
+                renderFoodCart();
+            } else if (service === 'custom') {
+                updateCustomFeeDisplay();
+            } else if (service === 'bike') {
+                recalculateBikeFare();
+            }
+        }
+
+        function renderHomeShopsStrip() {
+            const strip = document.getElementById('home-shops-strip');
+            if (!allShops.length) {
+                strip.innerHTML = `<p class="text-xs text-slate-400">No shops yet</p>`;
+                return;
+            }
+            strip.innerHTML = allShops.map(shop => `
+                <button onclick="openFoodWithShop('${shop.id}')"
+                    class="bg-white border border-slate-200/80 rounded-2xl p-2.5 flex items-center gap-2.5 shrink-0 w-[215px] text-left shadow-2xs hover:border-orange-300 transition">
+                    <img src="${shop.photo || DEFAULT_SHOP_IMG}" class="w-12 h-12 rounded-xl object-cover bg-orange-50 shrink-0 border border-slate-100">
+                    <div class="min-w-0">
+                        <p class="text-xs font-extrabold text-slate-900 truncate">${escapeHtml(shop.name)}</p>
+                        <p class="text-[10px] text-slate-500 truncate mt-0.5">📍 ${escapeHtml(shop.address)}</p>
+                        <span class="inline-block text-[10px] font-bold text-[#FF5722] mt-0.5">Menu (${(shop.items || []).length})</span>
+                    </div>
+                </button>
+            `).join('');
+        }
+
+        function openFoodWithShop(shopId) {
+            selectedShopId = shopId;
+            openService('food');
+        }
+
+        function renderHomeActiveOrder() {
+            const wrap = document.getElementById('home-active-order-wrap');
+            const active = allOrders.find(o => o.status !== 'Delivered' && o.status !== 'Cancelled');
+            if (!active) {
+                wrap.classList.add('hidden');
+                return;
+            }
+            const unread = countUnreadForOrder(active, 'customer');
+            wrap.classList.remove('hidden');
+            wrap.innerHTML = `
+                <div class="bg-white rounded-2xl p-3.5 border border-orange-200 shadow-xs flex items-center justify-between gap-3">
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-[#FF5722] animate-pulse"></span>
+                            <span class="text-[11px] font-extrabold text-[#FF5722]">Active Order • ${escapeHtml(active.status)}</span>
+                        </div>
+                        <p class="text-xs font-bold text-slate-900 truncate mt-0.5">${escapeHtml(active.details)}</p>
+                    </div>
+                    <button onclick="openChatModal(${active.id}, 'customer')"
+                        class="px-3 py-2 rounded-xl bg-orange-100 hover:bg-orange-200 text-[#FF5722] font-extrabold text-xs shrink-0 transition">
+                        💬 Chat ${unread > 0 ? `<span class="ml-1 px-1.5 py-0.2 bg-[#FF5722] text-white rounded-full text-[10px]">${unread}</span>` : ''}
+                    </button>
+                </div>
+            `;
+        }
+
+        function renderFoodShopBrowser() {
+            const searchQuery = (document.getElementById('food-menu-search').value || '').trim().toLowerCase();
+            document.getElementById('food-shop-count').textContent = `${allShops.length} Shops`;
+            const pillsContainer = document.getElementById('food-shop-pills');
+            const panelContainer = document.getElementById('food-selected-shop-panel');
+
+            if (!allShops.length) {
+                pillsContainer.innerHTML = "";
+                panelContainer.innerHTML = `<p class="text-xs text-slate-400">No shops available</p>`;
+                return;
+            }
+
+            if (!selectedShopId || !allShops.some(s => s.id === selectedShopId)) {
+                selectedShopId = allShops[0].id;
+            }
+
+            if (searchQuery.length > 0) {
+                pillsContainer.innerHTML = `<span class="text-[11px] font-bold text-[#FF5722]">Search results:</span>`;
+                let matchedCards = [];
+                allShops.forEach(shop => {
+                    (shop.items || []).forEach(item => {
+                        if (item.name.toLowerCase().includes(searchQuery) || shop.name.toLowerCase().includes(searchQuery)) {
+                            matchedCards.push(buildMenuCardHtml(shop, item, true));
+                        }
+                    });
+                });
+                panelContainer.innerHTML = matchedCards.length ? `<div class="space-y-2">${matchedCards.join('')}</div>` : `<p class="text-xs text-slate-400 text-center py-4">No matching items</p>`;
+                return;
+            }
+
+            pillsContainer.innerHTML = allShops.map(shop => {
+                const isSelected = shop.id === selectedShopId;
+                return `
+                    <button type="button" onclick="selectShopInFood('${shop.id}')"
+                        class="px-3.5 py-2 rounded-xl text-xs font-extrabold whitespace-nowrap transition shrink-0 border ${
+                            isSelected ? 'bg-[#FF5722] text-white border-[#FF5722] shadow-2xs' : 'bg-white text-slate-700 border-slate-200 hover:border-orange-300'
+                        }">
+                        🏪 ${escapeHtml(shop.name)}
+                    </button>
+                `;
+            }).join('');
+
+            const activeShop = allShops.find(s => s.id === selectedShopId);
+            if (!activeShop) return;
+
+            const menuCards = (activeShop.items || []).map(item => buildMenuCardHtml(activeShop, item, false)).join('');
+
+            panelContainer.innerHTML = `
+                <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <img src="${activeShop.photo || DEFAULT_SHOP_IMG}" class="w-11 h-11 rounded-xl object-cover bg-orange-50 shrink-0">
+                        <div class="min-w-0">
+                            <h3 class="text-xs font-extrabold text-slate-900 truncate">${escapeHtml(activeShop.name)}</h3>
+                            <p class="text-[11px] text-slate-500 truncate">📍 ${escapeHtml(activeShop.address)}</p>
+                        </div>
+                    </div>
+                    <a href="tel:${activeShop.phone}" class="px-2.5 py-1.5 rounded-xl bg-slate-100 text-slate-800 font-bold text-[11px] shrink-0">📞 Call</a>
+                </div>
+                <div class="space-y-2">
+                    ${menuCards || `<p class="text-xs text-slate-400 text-center py-3">No items posted</p>`}
+                </div>
+            `;
+        }
+
+        function buildMenuCardHtml(shop, item, showShopBadge) {
+            const priceVal = Number(item.priceNum || parseInt(String(item.price).replace(/[^0-9]/g, ''), 10) || 0);
+            return `
+                <div class="bg-white p-3 rounded-2xl border border-slate-200/80 shadow-2xs flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <img src="${item.photo || DEFAULT_SHOP_IMG}" class="w-14 h-14 rounded-xl object-cover bg-orange-50 border border-slate-100 shrink-0">
+                        <div class="min-w-0">
+                            ${showShopBadge ? `<span class="text-[10px] font-bold text-slate-400 block truncate">🏪 ${escapeHtml(shop.name)}</span>` : ''}
+                            <h4 class="text-xs font-extrabold text-slate-900 truncate">${escapeHtml(item.name)}</h4>
+                            <p class="text-xs font-extrabold text-[#FF5722] mt-0.5">${priceVal.toLocaleString()} Ks</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="addItemToFoodCart('${shop.id}', '${item.id}')"
+                        class="px-3.5 py-2 rounded-xl bg-orange-100 hover:bg-orange-200 active:scale-95 text-[#FF5722] font-extrabold text-xs shrink-0 transition">
+                        + Add
+                    </button>
+                </div>
+            `;
+        }
+
+        function selectShopInFood(shopId) {
+            selectedShopId = shopId;
+            renderFoodShopBrowser();
+        }
+
+        function addItemToFoodCart(shopId, itemId) {
+            const shop = allShops.find(s => s.id === shopId);
+            if (!shop) return;
+            const item = (shop.items || []).find(i => i.id === itemId);
+            if (!item) return;
+
+            const priceVal = Number(item.priceNum || parseInt(String(item.price).replace(/[^0-9]/g, ''), 10) || 0);
+            const existing = foodCart.find(c => c.shopId === shopId && c.itemId === itemId);
+
+            if (existing) existing.qty += 1;
+            else foodCart.push({ shopId: shop.id, shopName: shop.name, itemId: item.id, itemName: item.name, price: priceVal, qty: 1 });
+
+            renderFoodCart();
+            showToast(`Added ${item.name} to basket`);
+        }
+
+        function changeCartQty(index, delta) {
+            if (!foodCart[index]) return;
+            foodCart[index].qty += delta;
+            if (foodCart[index].qty <= 0) foodCart.splice(index, 1);
+            renderFoodCart();
+        }
+
+        function computeOrderDeliveryFee(addressText, distinctShopCount) {
+            const addr = (addressText || '').toLowerCase();
+            const outerKeywords = ["san phet", "tonsint", "zawtsu", "htaung", "စံဖိတ်", "တုံစင့်", "ဇာတ်စု", "ထောင်ကြီး"];
+            
+            let fee = Number(appConfig.orderTown);
+            if (outerKeywords.some(k => addr.includes(k))) {
+                fee = Number(appConfig.orderOuter);
+            }
+            if (distinctShopCount > 1) {
+                fee += (distinctShopCount - 1) * Number(appConfig.orderExtraStop);
+            }
+            return fee;
+        }
+
+        function renderFoodCart() {
+            const listEl = document.getElementById('food-cart-list');
+            const summaryEl = document.getElementById('food-cart-summary');
+            const badgeEl = document.getElementById('cart-shop-badge');
+
+            if (foodCart.length === 0) {
+                listEl.innerHTML = `<p class="text-xs text-slate-400 text-center py-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">Cart is empty</p>`;
+                summaryEl.classList.add('hidden');
+                badgeEl.classList.add('hidden');
+                return;
+            }
+
+            const uniqueShops = [...new Set(foodCart.map(c => c.shopName))];
+            badgeEl.classList.remove('hidden');
+            badgeEl.textContent = uniqueShops.length > 1 ? `${uniqueShops.length} Shops Combined` : `1 Shop`;
+
+            listEl.innerHTML = foodCart.map((c, idx) => `
+                <div class="flex items-center justify-between gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200/80">
+                    <div class="min-w-0">
+                        <p class="text-[10px] font-bold text-slate-400 truncate">🏪 ${escapeHtml(c.shopName)}</p>
+                        <p class="text-xs font-extrabold text-slate-900 truncate">${escapeHtml(c.itemName)}</p>
+                        <p class="text-[11px] font-bold text-[#FF5722]">${(c.price * c.qty).toLocaleString()} Ks</p>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button type="button" onclick="changeCartQty(${idx}, -1)" class="w-7 h-7 rounded-lg bg-white border border-slate-300 font-extrabold text-slate-700">-</button>
+                        <span class="text-xs font-extrabold w-4 text-center">${c.qty}</span>
+                        <button type="button" onclick="changeCartQty(${idx}, 1)" class="w-7 h-7 rounded-lg bg-[#FF5722] text-white font-extrabold">+</button>
+                    </div>
+                </div>
+            `).join('');
+
+            summaryEl.classList.remove('hidden');
+            recalculateFoodCartTotals();
+        }
+
+        function recalculateFoodCartTotals() {
+            if (foodCart.length === 0) return;
+            const addr = document.getElementById('food-address').value;
+            const uniqueShops = [...new Set(foodCart.map(c => c.shopName))];
+            const itemsTotal = foodCart.reduce((sum, c) => sum + (c.price * c.qty), 0);
+            const delivFee = computeOrderDeliveryFee(addr, uniqueShops.length);
+
+            document.getElementById('cart-items-total').textContent = `${itemsTotal.toLocaleString()} Ks`;
+            document.getElementById('cart-deliv-fee').textContent = `${delivFee.toLocaleString()} Ks`;
+            document.getElementById('cart-grand-total').textContent = `${(itemsTotal + delivFee).toLocaleString()} Ks`;
+        }
+
+        function captureFoodLocation() {
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => { foodCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude }; showToast("GPS attached"); },
+                    () => { foodCoords = { lat: HSIPAW_LAT, lng: HSIPAW_LNG }; }
+                );
+            }
+        }
+
+        function submitFoodOrder(e) {
+            e.preventDefault();
+            if (foodCart.length === 0) return;
+            const address = document.getElementById('food-address').value.trim();
+            if (!address) return;
+
+            const uniqueShops = [...new Set(foodCart.map(c => c.shopName))];
+            const itemsTotal = foodCart.reduce((sum, c) => sum + (c.price * c.qty), 0);
+            const delivFee = computeOrderDeliveryFee(address, uniqueShops.length);
+            const summaryLines = foodCart.map(c => `[${c.shopName}] ${c.itemName} x${c.qty} (${(c.price * c.qty).toLocaleString()} Ks)`).join('\n');
+
+            const newOrder = {
+                id: Date.now(),
+                type: 'food',
+                customerName: userProfile.name,
+                customerPhone: userProfile.phone,
+                customerPhoto: userProfile.photo || DEFAULT_AVATAR,
+                details: summaryLines,
+                pickupAddress: uniqueShops.join(' + '),
+                dropoffAddress: address,
+                pickupLat: HSIPAW_LAT,
+                pickupLng: HSIPAW_LNG,
+                dropoffLat: foodCoords ? foodCoords.lat : HSIPAW_LAT,
+                dropoffLng: foodCoords ? foodCoords.lng : HSIPAW_LNG,
+                fareText: `Deliv: ${delivFee.toLocaleString()} Ks | Total: ${(itemsTotal + delivFee).toLocaleString()} Ks`,
+                status: 'Pending',
+                assignedRiderId: null,
+                assignedRiderName: null,
+                assignedRiderPhone: null,
+                createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                messages: []
+            };
+
+            allOrders.unshift(newOrder);
+            saveOrders();
+            foodCart = [];
+            renderFoodCart();
+            showToast("Unified Food Order placed!");
+            switchBottomTab('activity');
+        }
+
+        function updateCustomFeeDisplay() {
+            const addr = document.getElementById('custom-address').value;
+            const fee = computeOrderDeliveryFee(addr, 1);
+            document.getElementById('custom-fee-display').textContent = `${fee.toLocaleString()} Ks + Receipt`;
+        }
+
+        function captureCustomLocation() {
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => { customCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude }; showToast("GPS attached"); },
+                    () => { customCoords = { lat: HSIPAW_LAT, lng: HSIPAW_LNG }; }
+                );
+            }
+        }
+
+        function submitCustomOrder(e) {
+            e.preventDefault();
+            const shop = document.getElementById('custom-shop-name').value.trim() || "Custom Store";
+            const items = document.getElementById('custom-items').value.trim();
+            const address = document.getElementById('custom-address').value.trim();
+            if (!items || !address) return;
+
+            const fee = computeOrderDeliveryFee(address, 1);
+            const newOrder = {
+                id: Date.now(),
+                type: 'custom',
+                customerName: userProfile.name,
+                customerPhone: userProfile.phone,
+                customerPhoto: userProfile.photo || DEFAULT_AVATAR,
+                details: `[Custom Buy - ${shop}]\n${items}`,
+                pickupAddress: shop,
+                dropoffAddress: address,
+                pickupLat: HSIPAW_LAT,
+                pickupLng: HSIPAW_LNG,
+                dropoffLat: customCoords ? customCoords.lat : HSIPAW_LAT,
+                dropoffLng: customCoords ? customCoords.lng : HSIPAW_LNG,
+                fareText: `Deliv Fee: ${fee.toLocaleString()} Ks + Receipt`,
+                status: 'Pending',
+                assignedRiderId: null,
+                assignedRiderName: null,
+                assignedRiderPhone: null,
+                createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                messages: []
+            };
+
+            allOrders.unshift(newOrder);
+            saveOrders();
+            e.target.reset();
+            showToast("Custom order submitted!");
+            switchBottomTab('activity');
+        }
+
+        function renderGrabSuggestedPlaces() {
+            const list = document.getElementById('grab-suggested-places');
+            if (!list) return;
+            list.innerHTML = HSIPAW_PLACES.map(p => `
+                <button type="button" onclick="applyGrabSuggestedPlace('${escapeAttr(p.name)}', ${p.lat}, ${p.lng})"
+                    class="w-full px-4 py-3 flex items-start gap-3 text-left hover:bg-slate-50 transition">
+                    <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-xs shrink-0 mt-0.5">🕒</span>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-xs font-bold text-slate-900 truncate">${escapeHtml(p.name)}</p>
+                        <p class="text-[11px] text-slate-500 truncate">${escapeHtml(p.sub)}</p>
+                    </div>
+                </button>
+            `).join('');
+        }
+
+        function applyGrabSuggestedPlace(name, lat, lng) {
+            if (activeBikeField === 'pickup') {
+                document.getElementById('bike-pickup').value = name;
+                bikePickupCoords = { lat, lng };
+                activeBikeField = 'dropoff';
+                document.getElementById('bike-dropoff').focus();
+            } else {
+                document.getElementById('bike-dropoff').value = name;
+                bikeDropoffCoords = { lat, lng };
+            }
+            recalculateBikeFare();
+        }
+
+        function captureBikePickupGPS() {
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        bikePickupCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                        document.getElementById('bike-pickup').value = `Current Location (${bikePickupCoords.lat.toFixed(4)}, ${bikePickupCoords.lng.toFixed(4)})`;
+                        activeBikeField = 'dropoff';
+                        recalculateBikeFare();
+                    },
+                    () => {
+                        bikePickupCoords = { lat: HSIPAW_LAT, lng: HSIPAW_LNG };
+                        document.getElementById('bike-pickup').value = "Hsipaw Town Center";
+                    }
+                );
+            }
+        }
+
+        function openGoogleMapPicker(target) {
+            currentPickerTarget = target;
+            tempPickedLabel = '';
+            document.getElementById('gmap-picker-title').textContent = target === 'pickup' ? "🛰️ Grab Pin: Set Pickup Location" : "🛰️ Grab Pin: Set Drop-off Destination";
+            const modal = document.getElementById('gmap-picker-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            updatePickerSatelliteMap(HSIPAW_LAT, HSIPAW_LNG);
+        }
+
+        function updatePickerSatelliteMap(lat, lng) {
+            tempPickedLat = lat;
+            tempPickedLng = lng;
+            document.getElementById('picker-coords-display').textContent = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+            document.getElementById('picker-google-map-iframe').src = `https://maps.google.com/maps?q=${lat},${lng}&t=k&z=16&output=embed`;
+        }
+
+        function selectHsipawLandmark(lat, lng, label) {
+            tempPickedLabel = label;
+            updatePickerSatelliteMap(lat, lng);
+        }
+
+        function useLiveGpsInPicker() {
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => updatePickerSatelliteMap(pos.coords.latitude, pos.coords.longitude),
+                    () => updatePickerSatelliteMap(HSIPAW_LAT, HSIPAW_LNG)
+                );
+            }
+        }
+
+        function closeGoogleMapPicker() {
+            const modal = document.getElementById('gmap-picker-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function confirmGoogleMapPickerSelection() {
+            const coordStr = `${tempPickedLat.toFixed(4)}, ${tempPickedLng.toFixed(4)}`;
+            const label = tempPickedLabel || `Grab Map Pin (${coordStr})`;
+            if (currentPickerTarget === 'pickup') {
+                bikePickupCoords = { lat: tempPickedLat, lng: tempPickedLng };
+                document.getElementById('bike-pickup').value = label;
+            } else {
+                bikeDropoffCoords = { lat: tempPickedLat, lng: tempPickedLng };
+                document.getElementById('bike-dropoff').value = label;
+            }
+            recalculateBikeFare();
+            closeGoogleMapPicker();
+        }
+
+        function recalculateBikeFare() {
+            const dropoffText = document.getElementById('bike-dropoff').value.toLowerCase();
+            const bawgyoKeywords = ["bawgyo", "ဘော်ကြို"];
+            const outerKeywords = ["san phet", "tonsint", "zawtsu", "htaung", "စံဖိတ်", "တုံစင့်", "ဇာတ်စု", "ထောင်ကြီး"];
+
+            let fare = Number(appConfig.bikeTown);
+            let zoneLabel = "Town Base Zone";
+
+            if (bawgyoKeywords.some(w => dropoffText.includes(w))) {
+                fare = Number(appConfig.bikeBawgyo);
+                zoneLabel = "Bawgyo Zone";
+            } else if (outerKeywords.some(w => dropoffText.includes(w))) {
+                fare = Number(appConfig.bikeOuter);
+                zoneLabel = "Outer Zone";
+            }
+
+            document.getElementById('bike-zone-label').textContent = zoneLabel;
+            document.getElementById('bike-fare-display').textContent = `${fare.toLocaleString()} Ks`;
+        }
+
+        function submitBikeOrder(e) {
+            e.preventDefault();
+            const pickup = document.getElementById('bike-pickup').value.trim();
+            const dropoff = document.getElementById('bike-dropoff').value.trim();
+            const fareText = document.getElementById('bike-fare-display').textContent;
+
+            const newRide = {
+                id: Date.now(),
+                type: 'bike',
+                customerName: userProfile.name,
+                customerPhone: userProfile.phone,
+                customerPhoto: userProfile.photo || DEFAULT_AVATAR,
+                details: 'Bike Taxi Ride Request (Grab Pin)',
+                pickupAddress: pickup,
+                dropoffAddress: dropoff,
+                pickupLat: bikePickupCoords ? bikePickupCoords.lat : HSIPAW_LAT,
+                pickupLng: bikePickupCoords ? bikePickupCoords.lng : HSIPAW_LNG,
+                dropoffLat: bikeDropoffCoords ? bikeDropoffCoords.lat : HSIPAW_LAT,
+                dropoffLng: bikeDropoffCoords ? bikeDropoffCoords.lng : HSIPAW_LNG,
+                fareText: fareText,
+                status: 'Pending',
+                assignedRiderId: null,
+                assignedRiderName: null,
+                assignedRiderPhone: null,
+                createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                messages: []
+            };
+
+            allOrders.unshift(newRide);
+            saveOrders();
+            e.target.reset();
+            showToast("Bike Taxi requested via Grab Pin!");
+            switchBottomTab('activity');
+        }
+
+        function cancelOrderByCustomer(orderId) {
+            const idx = allOrders.findIndex(o => o.id === orderId);
+            if (idx === -1) return;
+            if (allOrders[idx].status !== 'Pending' || allOrders[idx].assignedRiderId) {
+                showToast("Cannot cancel: Rider has already accepted!");
+                renderUserActivity();
+                return;
+            }
+            allOrders[idx].status = 'Cancelled';
+            saveOrders();
+            renderUserActivity();
+            showToast("Order cancelled");
+        }
+
+        function renderUserActivity() {
+            const container = document.getElementById('user-activity-list');
+            container.innerHTML = "";
+
+            if (allOrders.length === 0) {
+                container.innerHTML = `<div class="text-center py-12 space-y-2"><div class="text-4xl">📭</div><p class="text-sm font-bold text-slate-600">No orders yet</p></div>`;
+                return;
+            }
+
+            allOrders.forEach(item => {
+                const isBike = item.type === 'bike';
+                const badge = isBike
+                    ? `<span class="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold">🏍️ Bike Taxi</span>`
+                    : item.type === 'custom'
+                    ? `<span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold">🛍️ Custom Buy</span>`
+                    : `<span class="px-2.5 py-0.5 rounded-full bg-orange-100 text-[#FF5722] text-[11px] font-bold">🍜 Food Order</span>`;
+
+                let statusStyle = "bg-slate-100 text-slate-700";
+                if (item.status === 'Accepted' || item.status === 'On the way') statusStyle = "bg-blue-100 text-blue-800";
+                else if (item.status === 'Delivered') statusStyle = "bg-emerald-100 text-emerald-800";
+                else if (item.status === 'Cancelled') statusStyle = "bg-red-100 text-red-700";
+
+                const canCancel = (item.status === 'Pending' && !item.assignedRiderId);
+                const unread = countUnreadForOrder(item, 'customer');
+
+                const riderInfoHtml = item.assignedRiderName
+                    ? `<p class="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg mt-2">🛵 Rider: ${escapeHtml(item.assignedRiderName)} (${escapeHtml(item.assignedRiderPhone || '')})</p>`
+                    : '';
+
+                const cancelBtnHtml = canCancel
+                    ? `<button onclick="cancelOrderByCustomer(${item.id})" class="px-3 py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 font-bold text-xs">Cancel Order</button>`
+                    : (item.status !== 'Delivered' && item.status !== 'Cancelled')
+                    ? `<span class="text-[10px] font-bold text-slate-400">🔒 In progress</span>`
+                    : '';
+
+                const card = `
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
+                        <div class="flex items-center justify-between">${badge}<span class="px-2.5 py-1 rounded-full text-[11px] font-extrabold ${statusStyle}">${escapeHtml(item.status)}</span></div>
+                        <div>
+                            <p class="text-xs font-extrabold text-slate-900 whitespace-pre-line">${escapeHtml(item.details)}</p>
+                            <p class="text-[11px] text-slate-500 mt-1">📍 ${escapeHtml(item.dropoffAddress)}</p>
+                            ${riderInfoHtml}
+                        </div>
+                        <div class="pt-2.5 border-t border-slate-100 flex items-center justify-between gap-2 flex-wrap">
+                            <div><span class="text-[10px] text-slate-400 block">${item.createdAt || ''}</span><span class="text-xs font-extrabold text-[#FF5722]">${escapeHtml(item.fareText)}</span></div>
+                            <div class="flex items-center gap-2">
+                                ${cancelBtnHtml}
+                                <button onclick="openChatModal(${item.id}, 'customer')" class="px-3.5 py-2 rounded-xl bg-[#FF5722] text-white font-bold text-xs flex items-center gap-1">
+                                    <span>💬 Chat</span> ${unread > 0 ? `<span class="px-1.5 py-0.2 bg-white text-[#FF5722] rounded-full text-[10px] font-extrabold">${unread}</span>` : ''}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', card);
+            });
+        }
+
+        function openRiderPortalGate() {
+            if (myRiderSession && myRiderSession.pinVerified) { enterRiderPortalScreen(); return; }
+            document.getElementById('rider-pin-input').value = "";
+            document.getElementById('rider-pin-error').classList.add('hidden');
+            const m = document.getElementById('rider-pin-modal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+            setTimeout(() => document.getElementById('rider-pin-input').focus(), 100);
+        }
+
+        function closeRiderPinModal() {
+            document.getElementById('rider-pin-modal').classList.add('hidden');
+            document.getElementById('rider-pin-modal').classList.remove('flex');
+        }
+
+        function verifyRiderPin() {
+            if (document.getElementById('rider-pin-input').value.trim() === RIDER_SECRET_PIN) {
+                myRiderSession = { pinVerified: true, riderId: null };
+                localStorage.setItem(MY_RIDER_SESSION_KEY, JSON.stringify(myRiderSession));
+                closeRiderPinModal();
+                enterRiderPortalScreen();
+            } else {
+                document.getElementById('rider-pin-error').classList.remove('hidden');
+            }
+        }
+
+        function enterRiderPortalScreen() {
+            document.getElementById('terms-screen').classList.add('hidden');
+            document.getElementById('register-screen').classList.add('hidden');
+            document.getElementById('main-app-shell').classList.add('hidden');
+            document.getElementById('admin-screen').classList.add('hidden');
+            document.getElementById('rider-screen').classList.remove('hidden');
+            renderRiderPortalState();
+        }
+
+        function exitRiderPortal() { enterMainApp(); }
+
+        function submitRiderApplication(e) {
+            e.preventDefault();
+            const name = document.getElementById('rider-app-name').value.trim();
+            const phone = document.getElementById('rider-app-phone').value.trim();
+            if (!name || !phone) return;
+
+            const newRider = { id: 'rider_' + Date.now(), name, phone, approved: false, joinedAt: new Date().toLocaleDateString() };
+            allRiders.unshift(newRider);
+            saveRiders();
+            myRiderSession = { pinVerified: true, riderId: newRider.id };
+            localStorage.setItem(MY_RIDER_SESSION_KEY, JSON.stringify(myRiderSession));
+            renderRiderPortalState();
+            showToast("Application sent to Admin");
+        }
+
+        function checkRiderApprovalStatus() {
+            allRiders = JSON.parse(localStorage.getItem(RIDERS_STORAGE_KEY)) || [];
+            renderRiderPortalState();
+            showToast("Checked approval status");
+        }
+
+        function renderRiderPortalState() {
+            const regBox = document.getElementById('rider-register-box');
+            const pendBox = document.getElementById('rider-pending-box');
+            const boardBox = document.getElementById('rider-board-box');
+
+            regBox.classList.add('hidden');
+            pendBox.classList.add('hidden');
+            boardBox.classList.add('hidden');
+
+            const me = myRiderSession && myRiderSession.riderId ? allRiders.find(r => r.id === myRiderSession.riderId) : null;
+            if (!me) { regBox.classList.remove('hidden'); return; }
+
+            document.getElementById('rider-header-sub').textContent = `${me.name} • ${me.phone}`;
+            if (!me.approved) { pendBox.classList.remove('hidden'); return; }
+
+            boardBox.classList.remove('hidden');
+            renderRiderDispatchBoard(me);
+        }
+
+        function renderRiderDispatchBoard(me) {
+            const myActive = allOrders.filter(o => o.assignedRiderId === me.id && o.status !== 'Delivered' && o.status !== 'Cancelled');
+            const myWrap = document.getElementById('rider-my-active-wrap');
+
+            if (myActive.length > 0) {
+                myWrap.innerHTML = `<h2 class="text-xs font-extrabold text-emerald-800 uppercase tracking-wider">My Active Deliveries (${myActive.length})</h2>` +
+                myActive.map(order => `
+                    <div class="bg-white p-4 rounded-2xl border-2 border-emerald-500 shadow-sm space-y-3">
+                        <div class="flex items-center justify-between"><span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-extrabold">${escapeHtml(order.status)}</span><span class="text-xs font-extrabold text-slate-900">${escapeHtml(order.fareText)}</span></div>
+                        <div>
+                            <p class="text-sm font-extrabold text-slate-900">${escapeHtml(order.customerName)} (${escapeHtml(order.customerPhone)})</p>
+                            <p class="text-xs text-slate-700 whitespace-pre-line mt-1">${escapeHtml(order.details)}</p>
+                            <p class="text-xs text-slate-500 mt-1">📍 Drop-off: ${escapeHtml(order.dropoffAddress)}</p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <a href="https://maps.google.com/maps?q=${order.dropoffLat},${order.dropoffLng}&t=k" target="_blank" class="py-2.5 rounded-xl bg-blue-50 text-blue-700 font-bold text-xs text-center">🛰️ Map</a>
+                            <button onclick="openChatModal(${order.id}, 'admin')" class="py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs">💬 Chat</button>
+                        </div>
+                        <button onclick="completeOrderByRider(${order.id})" class="w-full py-3 rounded-xl bg-emerald-600 text-white font-extrabold text-xs">✅ Mark Delivered & Complete</button>
+                    </div>
+                `).join('');
+            } else { myWrap.innerHTML = ''; }
+
+            const availablePool = allOrders.filter(o => o.status === 'Pending' && !o.assignedRiderId);
+            document.getElementById('rider-pool-count').textContent = availablePool.length;
+            const availList = document.getElementById('rider-available-list');
+
+            if (availablePool.length === 0) {
+                availList.innerHTML = `<p class="text-center text-xs text-slate-400 py-8 bg-white rounded-2xl border border-slate-200">No unclaimed orders</p>`;
+                return;
+            }
+
+            availList.innerHTML = availablePool.map(order => `
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-3">
+                    <div class="flex items-center justify-between"><span class="text-xs font-extrabold text-[#FF5722] uppercase">${escapeHtml(order.type)}</span><span class="text-xs font-extrabold text-slate-900">${escapeHtml(order.fareText)}</span></div>
+                    <div>
+                        <p class="text-xs font-extrabold text-slate-900 whitespace-pre-line">${escapeHtml(order.details)}</p>
+                        <p class="text-[11px] text-slate-500 mt-1">From: ${escapeHtml(order.pickupAddress)}</p>
+                        <p class="text-[11px] text-slate-500">To: ${escapeHtml(order.dropoffAddress)}</p>
+                    </div>
+                    <button onclick="claimOrderByRider(${order.id})" class="w-full py-3 rounded-xl bg-[#FF5722] text-white font-extrabold text-xs shadow-xs">🛵 Accept & Claim Order</button>
+                </div>
+            `).join('');
+        }
+
+        function claimOrderByRider(orderId) {
+            allOrders = JSON.parse(localStorage.getItem(ORDERS_STORAGE_KEY)) || [];
+            const order = allOrders.find(o => o.id === orderId);
+            const me = allRiders.find(r => r.id === myRiderSession.riderId);
+            if (!order || !me) return;
+            if (order.assignedRiderId || order.status !== 'Pending') { showToast("Another rider claimed this order."); renderRiderPortalState(); return; }
+
+            order.assignedRiderId = me.id;
+            order.assignedRiderName = me.name;
+            order.assignedRiderPhone = me.phone;
+            order.status = 'Accepted';
+            saveOrders();
+            renderRiderPortalState();
+            showToast("Order claimed!");
+        }
+
+        function completeOrderByRider(orderId) {
+            const order = allOrders.find(o => o.id === orderId);
+            if (!order) return;
+            order.status = 'Delivered';
+            order.completedAt = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            saveOrders();
+            renderRiderPortalState();
+            showToast("Order delivered!");
+        }
+
+        function openPinModal() {
+            document.getElementById('pin-input').value = "";
+            document.getElementById('pin-error').classList.add('hidden');
+            const m = document.getElementById('pin-modal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+            setTimeout(() => document.getElementById('pin-input').focus(), 100);
+        }
+
+        function closePinModal() {
+            document.getElementById('pin-modal').classList.add('hidden');
+            document.getElementById('pin-modal').classList.remove('flex');
+        }
+
+        function verifyPin() {
+            if (document.getElementById('pin-input').value.trim() === ADMIN_SECRET_PIN) {
+                closePinModal();
+                showAdminScreen();
+            } else { document.getElementById('pin-error').classList.remove('hidden'); }
+        }
+
+        function showAdminScreen() {
+            document.getElementById('terms-screen').classList.add('hidden');
+            document.getElementById('register-screen').classList.add('hidden');
+            document.getElementById('main-app-shell').classList.add('hidden');
+            document.getElementById('rider-screen').classList.add('hidden');
+            document.getElementById('admin-screen').classList.remove('hidden');
+            switchAdminTab('orders');
+        }
+
+        function exitAdmin() { enterMainApp(); }
+
+        function switchAdminTab(tab) {
+            ['admin-view-orders', 'admin-view-staff', 'admin-view-rates'].forEach(id => document.getElementById(id).classList.add('hidden'));
+            ['adm-tab-orders', 'adm-tab-staff', 'adm-tab-rates'].forEach(id => {
+                document.getElementById(id).className = "px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 whitespace-nowrap text-xs font-bold";
+            });
+
+            document.getElementById(`admin-view-${tab}`).classList.remove('hidden');
+            document.getElementById(`adm-tab-${tab}`).className = "px-3 py-1.5 rounded-lg bg-slate-900 text-white whitespace-nowrap text-xs font-bold";
+
+            if (tab === 'orders') renderAdminOrders();
+            else if (tab === 'staff') renderAdminStaffList();
+            else if (tab === 'rates') populateAdminConfigForm();
+        }
+
+        function renderAdminOrders() {
+            const activeOrders = allOrders.filter(o => o.status !== 'Delivered' && o.status !== 'Cancelled');
+            document.getElementById('admin-count').textContent = activeOrders.length;
+            document.getElementById('admin-staff-pending-badge').textContent = allRiders.filter(r => !r.approved).length;
+
+            const container = document.getElementById('admin-orders-container');
+            if (allOrders.length === 0) { container.innerHTML = `<p class="text-center text-slate-400 text-sm py-12">No orders</p>`; return; }
+
+            container.innerHTML = allOrders.map((order, idx) => {
+                const riderTag = order.assignedRiderName
+                    ? `<span class="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-900 font-extrabold text-[11px]">🛵 Rider: ${escapeHtml(order.assignedRiderName)}</span>`
+                    : `<span class="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800 font-bold text-[11px]">⏳ Unassigned</span>`;
+
+                return `
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-3">
+                        <div class="flex items-center justify-between gap-2 flex-wrap">${riderTag}<span class="text-xs font-extrabold text-slate-900 bg-slate-100 px-2.5 py-1 rounded-lg">${escapeHtml(order.status)}</span></div>
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="flex items-center gap-2.5 min-w-0">
+                                <img src="${order.customerPhoto || DEFAULT_AVATAR}" class="w-10 h-10 rounded-full object-cover border border-slate-200">
+                                <div class="min-w-0"><h3 class="text-sm font-extrabold text-slate-900 truncate">${escapeHtml(order.customerName)}</h3><p class="text-xs text-slate-500">${escapeHtml(order.customerPhone)}</p></div>
+                            </div>
+                            <a href="tel:${order.customerPhone}" class="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-900 font-bold text-xs">📞 Call</a>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/70 space-y-1 text-xs">
+                            <p class="font-extrabold text-slate-900 whitespace-pre-line">${escapeHtml(order.details)}</p>
+                            <p class="text-slate-600">📍 ${escapeHtml(order.dropoffAddress)}</p>
+                            <p class="font-bold text-[#FF5722]">${escapeHtml(order.fareText)}</p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="cycleAdminOrderStatus(${idx})" class="py-2.5 rounded-xl bg-[#FF5722] text-white font-extrabold text-xs">Change Status</button>
+                            <button onclick="openChatModal(${order.id}, 'admin')" class="py-2.5 rounded-xl bg-slate-900 text-white font-extrabold text-xs">💬 Chat</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function cycleAdminOrderStatus(index) {
+            const flow = ['Pending', 'Accepted', 'On the way', 'Delivered'];
+            const nextIdx = (flow.indexOf(allOrders[index].status) + 1) % flow.length;
+            allOrders[index].status = flow[nextIdx];
+            saveOrders();
+            renderAdminOrders();
+        }
+
+        function renderAdminStaffList() {
+            const list = document.getElementById('admin-staff-list');
+            if (allRiders.length === 0) { list.innerHTML = `<p class="text-center text-xs text-slate-400 py-8">No applications</p>`; return; }
+            list.innerHTML = allRiders.map((r, idx) => `
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 flex items-center justify-between gap-3">
+                    <div>
+                        <p class="text-sm font-extrabold text-slate-900">${escapeHtml(r.name)}</p>
+                        <p class="text-xs text-slate-500">📞 ${escapeHtml(r.phone)}</p>
+                        <span class="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${r.approved ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">${r.approved ? 'Approved' : 'Pending'}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        ${!r.approved ? `<button onclick="approveRider(${idx})" class="px-3 py-2 rounded-xl bg-emerald-600 text-white font-bold text-xs">Approve</button>` : `<button onclick="revokeRider(${idx})" class="px-3 py-1.5 rounded-xl bg-amber-50 text-amber-700 font-bold text-xs">Revoke</button>`}
+                        <button onclick="deleteRider(${idx})" class="px-3 py-1.5 rounded-xl bg-red-50 text-red-600 font-bold text-xs">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function approveRider(idx) { allRiders[idx].approved = true; saveRiders(); renderAdminStaffList(); showToast("Rider approved!"); }
+        function revokeRider(idx) { allRiders[idx].approved = false; saveRiders(); renderAdminStaffList(); showToast("Rider revoked"); }
+        function deleteRider(idx) {
+            if (confirm("Delete this rider?")) { allRiders.splice(idx, 1); saveRiders(); renderAdminStaffList(); showToast("Rider deleted"); }
+        }
+
+        function populateAdminConfigForm() {
+            document.getElementById('cfg-order-town').value = appConfig.orderTown;
+            document.getElementById('cfg-order-outer').value = appConfig.orderOuter;
+            document.getElementById('cfg-order-extrastop').value = appConfig.orderExtraStop;
+            document.getElementById('cfg-bike-town').value = appConfig.bikeTown;
+            document.getElementById('cfg-bike-outer').value = appConfig.bikeOuter;
+            document.getElementById('cfg-bike-bawgyo').value = appConfig.bikeBawgyo;
+            document.getElementById('cfg-rules-textarea').value = (appConfig.rules || []).join('\n');
+        }
+
+        function saveAdminRates(e) {
+            e.preventDefault();
+            appConfig.orderTown = Number(document.getElementById('cfg-order-town').value) || 2000;
+            appConfig.orderOuter = Number(document.getElementById('cfg-order-outer').value) || 3000;
+            appConfig.orderExtraStop = Number(document.getElementById('cfg-order-extrastop').value) || 500;
+            appConfig.bikeTown = Number(document.getElementById('cfg-bike-town').value) || 4000;
+            appConfig.bikeOuter = Number(document.getElementById('cfg-bike-outer').value) || 5000;
+            appConfig.bikeBawgyo = Number(document.getElementById('cfg-bike-bawgyo').value) || 8000;
+            saveConfig();
+            renderDynamicRatesAndRules();
+            showToast("Rates updated successfully!");
+        }
+
+        function saveAdminRules(e) {
+            e.preventDefault();
+            appConfig.rules = document.getElementById('cfg-rules-textarea').value.split('\n').map(l => l.trim()).filter(Boolean);
+            saveConfig();
+            renderDynamicRatesAndRules();
+            showToast("Terms updated successfully!");
+        }
+
+        function openShopPortal() {
+            if (shopUnlocked) { openShopManagerView(); return; }
+            document.getElementById('shop-pass-input').value = "";
+            document.getElementById('shop-pass-error').classList.add('hidden');
+            const modal = document.getElementById('shop-pass-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => document.getElementById('shop-pass-input').focus(), 100);
+        }
+
+        function closeShopPassModal() {
+            document.getElementById('shop-pass-modal').classList.add('hidden');
+            document.getElementById('shop-pass-modal').classList.remove('flex');
+        }
+
+        function verifyShopPassword() {
+            if (document.getElementById('shop-pass-input').value.trim() === SHOP_SECRET_PIN) {
+                shopUnlocked = true;
+                closeShopPassModal();
+                openShopManagerView();
+            } else { document.getElementById('shop-pass-error').classList.remove('hidden'); }
+        }
+
+        function openShopManagerView() {
+            hideAllViews();
+            document.getElementById('view-shop-manager').classList.remove('hidden');
+            renderShopManagerList();
+        }
+
+        function openNewShopForm() {
+            document.getElementById('shop-setup-form').reset();
+            tempShopPhoto = DEFAULT_SHOP_IMG;
+            document.getElementById('shop-photo-preview').innerHTML = `<span class="text-xl">📷</span><span class="text-[9px] font-bold">Photo</span>`;
+        }
+
+        function previewShopPhoto(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                tempShopPhoto = e.target.result;
+                document.getElementById('shop-photo-preview').innerHTML = `<img src="${tempShopPhoto}" class="w-full h-full object-cover">`;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function saveShopChannel(e) {
+            e.preventDefault();
+            const name = document.getElementById('shop-name-input').value.trim();
+            const phone = document.getElementById('shop-phone-input').value.trim();
+            const address = document.getElementById('shop-address-input').value.trim();
+            if (!name || !phone || !address) return;
+
+            allShops.unshift({ id: 'shop_' + Date.now(), name, phone, address, photo: tempShopPhoto, items: [] });
+            saveShops();
+            openNewShopForm();
+            renderShopManagerList();
+            showToast(`Shop "${name}" registered!`);
+        }
+
+        function addMenuItemToShop(event, shopId) {
+            event.preventDefault();
+            const form = event.target;
+            const itemName = form.querySelector('.menu-name-input').value.trim();
+            const itemPrice = parseInt(form.querySelector('.menu-price-input').value, 10) || 0;
+            const photoData = form.dataset.photoData || DEFAULT_SHOP_IMG;
+
+            const shop = allShops.find(s => s.id === shopId);
+            if (!shop || !itemName || !itemPrice) return;
+            if (!shop.items) shop.items = [];
+
+            shop.items.unshift({ id: 'item_' + Date.now(), name: itemName, priceNum: itemPrice, photo: photoData });
+            saveShops();
+            renderShopManagerList();
+            showToast("Menu added");
+        }
+
+        function handleMenuItemPhotoChange(event, formId) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const form = document.getElementById(formId);
+                form.dataset.photoData = e.target.result;
+                form.querySelector('.menu-photo-label').textContent = "✅ Photo Ready";
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function deleteMenuItem(shopId, itemId) {
+            const shop = allShops.find(s => s.id === shopId);
+            if (!shop) return;
+            shop.items = shop.items.filter(i => i.id !== itemId);
+            saveShops();
+            renderShopManagerList();
+        }
+
+        function renderShopManagerList() {
+            const container = document.getElementById('shop-manager-list');
+            container.innerHTML = allShops.map(shop => {
+                const formId = `add-menu-form-${shop.id}`;
+                const itemsHtml = (shop.items || []).map(item => `
+                    <div class="flex items-center justify-between gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200/70">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <img src="${item.photo || DEFAULT_SHOP_IMG}" class="w-10 h-10 rounded-lg object-cover">
+                            <div class="min-w-0"><p class="text-xs font-extrabold text-slate-900 truncate">${escapeHtml(item.name)}</p><p class="text-[11px] font-bold text-[#FF5722]">${Number(item.priceNum || 0).toLocaleString()} Ks</p></div>
+                        </div>
+                        <button type="button" onclick="deleteMenuItem('${shop.id}', '${item.id}')" class="px-2 py-1 rounded-lg bg-red-50 text-red-600 text-[11px] font-bold">Delete</button>
+                    </div>
+                `).join('');
+
+                return `
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 space-y-3">
+                        <div class="flex items-center gap-3 pb-2 border-b border-slate-100">
+                            <img src="${shop.photo || DEFAULT_SHOP_IMG}" class="w-12 h-12 rounded-xl object-cover">
+                            <div><h3 class="text-sm font-extrabold text-slate-900">${escapeHtml(shop.name)}</h3><p class="text-[11px] text-slate-500">📍 ${escapeHtml(shop.address)}</p></div>
+                        </div>
+                        <form id="${formId}" onsubmit="addMenuItemToShop(event, '${shop.id}')" class="bg-orange-50/70 p-3 rounded-xl border border-orange-200 space-y-2">
+                            <p class="text-[11px] font-extrabold text-[#FF5722]">+ Add Menu Item</p>
+                            <div class="grid grid-cols-2 gap-2">
+                                <input type="text" required placeholder="Item Name" class="menu-name-input rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-xs text-slate-950">
+                                <input type="number" required placeholder="Price (Ks)" class="menu-price-input rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-xs text-slate-950">
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <label class="menu-photo-label flex-1 cursor-pointer py-2 px-3 rounded-lg bg-white border border-slate-300 text-slate-700 text-[11px] font-bold text-center">
+                                    📷 Choose Photo
+                                    <input type="file" accept="image/*" class="hidden" onchange="handleMenuItemPhotoChange(event, '${formId}')">
+                                </label>
+                                <button type="submit" class="px-4 py-2 rounded-lg bg-[#FF5722] text-white text-xs font-extrabold">Post</button>
+                            </div>
+                        </form>
+                        <div class="space-y-1.5">${itemsHtml}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function setMainGoogleMapType(type) {
+            mainMapType = type;
+            document.getElementById('btn-map-sat').className = type === 'k' ? "px-2.5 py-1 rounded-lg bg-white text-[#FF5722] text-xs font-bold shadow-2xs" : "px-2.5 py-1 rounded-lg text-slate-600 text-xs font-bold";
+            document.getElementById('btn-map-std').className = type === 'm' ? "px-2.5 py-1 rounded-lg bg-white text-[#FF5722] text-xs font-bold shadow-2xs" : "px-2.5 py-1 rounded-lg text-slate-600 text-xs font-bold";
+            refreshMainGoogleMapIframe();
+        }
+
+        function refreshMainGoogleMapIframe() {
+            document.getElementById('main-google-map-iframe').src = `https://maps.google.com/maps?q=${mainMapLat},${mainMapLng}&t=${mainMapType}&z=16&output=embed`;
+            document.getElementById('main-map-coords').textContent = `${mainMapLat.toFixed(4)}, ${mainMapLng.toFixed(4)}`;
+            document.getElementById('main-map-gmaps-link').href = `https://maps.google.com/maps?q=${mainMapLat},${mainMapLng}&t=${mainMapType}`;
+        }
+
+        function locateUserOnGoogleSatelliteMap() {
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => { mainMapLat = pos.coords.latitude; mainMapLng = pos.coords.longitude; refreshMainGoogleMapIframe(); },
+                    () => { mainMapLat = HSIPAW_LAT; mainMapLng = HSIPAW_LNG; refreshMainGoogleMapIframe(); }
+                );
+            }
+        }
+
+        const ADMIN_QUICK_REPLIES = ["Purchased items", "On the way now", "Arrived at your gate", "Please wait a moment"];
+        const CUSTOMER_QUICK_REPLIES = ["Okay, thank you!", "Please hurry", "Waiting outside"];
+
+        function countUnreadForOrder(order, viewerRole) {
+            if (!order.messages) return 0;
+            return order.messages.filter(m => viewerRole === 'customer' ? (m.sender === 'admin' && !m.readByCustomer) : (m.sender === 'customer' && !m.readByAdmin)).length;
+        }
+
+        function updateUnreadIndicators() {
+            const totalUnread = allOrders.reduce((sum, o) => sum + countUnreadForOrder(o, 'customer'), 0);
+            const dot = document.getElementById('nav-unread-dot');
+            if (totalUnread > 0) dot.classList.remove('hidden');
+            else dot.classList.add('hidden');
+        }
+
+        function openChatModal(orderId, role) {
+            activeChatOrderId = orderId;
+            activeChatRole = role;
+            const modal = document.getElementById('chat-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            const order = allOrders.find(o => o.id === orderId);
+            if (order) {
+                document.getElementById('chat-header-title').textContent = role === 'admin' ? `💬 ${order.customerName}` : `💬 Rider / Dispatch`;
+                document.getElementById('chat-header-subtitle').textContent = `Status: ${order.status}`;
+                document.getElementById('chat-order-summary').innerHTML = `<span class="truncate font-bold">📦 ${escapeHtml(order.details)}</span>`;
+                const replies = role === 'admin' ? ADMIN_QUICK_REPLIES : CUSTOMER_QUICK_REPLIES;
+                document.getElementById('chat-quick-replies').innerHTML = replies.map(txt =>
+                    `<button type="button" onclick="pushMessageToOrder('${txt}')" class="px-3 py-1.5 rounded-full bg-orange-50 border border-orange-200 text-[#FF5722] font-bold text-xs whitespace-nowrap">${txt}</button>`
+                ).join('');
+            }
+            renderChatMessages();
+        }
+
+        function closeChatModal() {
+            activeChatOrderId = null;
+            document.getElementById('chat-modal').classList.add('hidden');
+            document.getElementById('chat-modal').classList.remove('flex');
+            refreshVisibleScreens();
+        }
+
+        function renderChatMessages() {
+            const order = allOrders.find(o => o.id === activeChatOrderId);
+            if (!order) return;
+            if (!order.messages) order.messages = [];
+
+            order.messages.forEach(m => {
+                if (activeChatRole === 'customer' && m.sender === 'admin') m.readByCustomer = true;
+                if (activeChatRole === 'admin' && m.sender === 'customer') m.readByAdmin = true;
+            });
+            saveOrders();
+
+            const feed = document.getElementById('chat-messages-feed');
+            if (order.messages.length === 0) {
+                feed.innerHTML = `<p class="text-center text-xs text-slate-400 py-10">No messages yet</p>`;
+                return;
+            }
+            feed.innerHTML = order.messages.map(msg => {
+                const isMine = msg.sender === activeChatRole;
+                return `
+                    <div class="flex flex-col ${isMine ? 'items-end' : 'items-start'}">
+                        <span class="text-[10px] text-slate-400 mb-0.5">${msg.time}</span>
+                        <div class="max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${isMine ? 'bg-[#FF5722] text-white' : 'bg-white border border-slate-200 text-slate-900'}">${escapeHtml(msg.text)}</div>
+                    </div>
+                `;
+            }).join('');
+            feed.scrollTop = feed.scrollHeight;
+        }
+
+        function sendChatMessage(e) {
+            e.preventDefault();
+            const input = document.getElementById('chat-text-input');
+            const text = input.value.trim();
+            if (!text) return;
+            input.value = "";
+            pushMessageToOrder(text);
+        }
+
+        function pushMessageToOrder(text) {
+            const order = allOrders.find(o => o.id === activeChatOrderId);
+            if (!order) return;
+            if (!order.messages) order.messages = [];
+            order.messages.push({
+                sender: activeChatRole,
+                text,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                readByCustomer: activeChatRole === 'customer',
+                readByAdmin: activeChatRole === 'admin'
+            });
+            saveOrders();
+            renderChatMessages();
+            updateUnreadIndicators();
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str == null ? '' : String(str);
+            return div.innerHTML;
+        }
+
+        function escapeAttr(str) {
+            return String(str).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        }
+    </script>
+</body>
+</html>
